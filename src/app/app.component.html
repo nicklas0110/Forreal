@@ -23,7 +23,7 @@
   </div>
 
   <mat-card class="content" *ngFor="let n of fireService.messages">
-    <mat-card-content>{{n | json}}</mat-card-content>
+    <mat-card-content>{{n | json}} <button (click)="deleteMessage">X</button></mat-card-content>
   </mat-card>
 
 </div>

@@ -11,6 +11,7 @@ export class AppComponent {
   sendThisMessage: any;
   email: string = "";
   password: string ="";
+  deleteThisMessage: any;
 
   constructor(public fireService: FireService) {
   }
@@ -19,5 +20,9 @@ export class AppComponent {
     this.fireService.sendMessage(this.sendThisMessage).then(()=>{
       this.sendThisMessage= '';
     });
+  }
+
+  deleteMessage(){
+    this.fireService.deleteMessage(this.deleteThisMessage);
   }
 }

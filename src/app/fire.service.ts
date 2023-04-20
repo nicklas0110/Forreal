@@ -39,6 +39,17 @@ export class FireService {
       .collection('myChat')
       .add(messageDTO);
   }
+  deleteMessage(deleteThisMessage: any) {
+    this.firestore
+      .collection('myChat')
+      .doc('OQbznJ0I29rzROQ5uXyj').delete()
+      .then(() => {
+      console.log("Document successfully deleted!");
+    })
+      .catch((error) => {
+        console.error("Error deleting document: ", error);
+      });
+  }
 
   getMessages() {
     this.firestore
