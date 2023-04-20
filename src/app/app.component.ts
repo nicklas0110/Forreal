@@ -22,7 +22,7 @@ export class AppComponent {
     });
   }
 
-  deleteMessage(){
-    this.fireService.deleteMessage(this.deleteThisMessage);
+  deleteMessage(id: any){
+    this.fireService.deleteMessage(id);
   }
 }

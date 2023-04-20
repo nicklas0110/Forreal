@@ -23,7 +23,9 @@
   </div>
 
   <mat-card class="content" *ngFor="let n of fireService.messages">
-    <mat-card-content>{{n | json}} <button (click)="deleteMessage">X</button></mat-card-content>
+    <mat-card-content>{{n.data.messageContent}} <button (click)="deleteMessage(n.id)">X</button></mat-card-content>
+    <mat-card-content>{{n.data.timestamp.toDate()}}</mat-card-content>
+    <mat-card-content>by: {{n.data.user}}</mat-card-content>
   </mat-card>
 
 </div>

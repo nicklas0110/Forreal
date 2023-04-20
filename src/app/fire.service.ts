@@ -33,22 +33,16 @@ export class FireService {
     let messageDTO: MessageDTO = {
       messageContent: sendThisMessage,
       timestamp: new Date(),
-      user: 'some user'
+      user: this.auth.currentUser?.email+''
     }
     await this.firestore
       .collection('myChat')
       .add(messageDTO);
   }
-  deleteMessage(deleteThisMessage: any) {
+  deleteMessage(id: any) {
     this.firestore
       .collection('myChat')
-      .doc('OQbznJ0I29rzROQ5uXyj').delete()
-      .then(() => {
-      console.log("Document successfully deleted!");
-    })
-      .catch((error) => {
-        console.error("Error deleting document: ", error);
-      });
+      .doc(id).delete();
   }
 
   getMessages() {
