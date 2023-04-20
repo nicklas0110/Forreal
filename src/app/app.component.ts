@@ -9,8 +9,15 @@ import {FireService} from "./fire.service";
 export class AppComponent {
   title = 'fbboss';
   sendThisMessage: any;
+  email: string = "";
+  password: string ="";
 
   constructor(public fireService: FireService) {
+  }
 
+  sendMessage(){
+    this.fireService.sendMessage(this.sendThisMessage).then(()=>{
+      this.sendThisMessage= '';
+    });
   }
 }

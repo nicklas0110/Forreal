@@ -1,0 +1,66 @@
+.loginForm{
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.signInBtn{
+  width: 100px;
+  height: 40px;
+  margin-top: 20px;
+  margin-right: 20px;
+  background-color: lightgray;
+}
+.registerBtn{
+  width: 100px;
+  height: 40px;
+  margin-top: 20px;
+  margin-left: 20px;
+  background-color: lightgray;
+}
+
+.email, .password{
+  width: 97%;
+  margin-top: 10px;
+}
+
+.loginHeader{
+  justify-content: center;
+  display: flex;
+  padding-bottom: 2%;
+}
+
+.send{
+  display: block;
+  margin: 0 auto;
+  width: 50%;
+}
+
+.sendBtn{
+  display: block;
+  margin: 0 auto;
+}
+
+
+.hello{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10%;
+}
+
+.content{
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-top: 10px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.signOut{
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 10px;
+  margin-right: 10px;
+}

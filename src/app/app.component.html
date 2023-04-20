@@ -1,7 +1,30 @@
-<input [(ngModel)]="sendThisMessage">
+<div class="loginForm">
+<div *ngIf="fireService.auth.currentUser==null">
+  <h1 class="Loginheader">Login to your account</h1>
+  <input class="email" placeholder="email" [(ngModel)]="email" type="email">
+  <br>
+  <input class="password" placeholder="password"  [(ngModel)]="password" type="password">
+  <br>
+  <button class="signInBtn" mat-raised-button (click)="fireService.signIn(email, password)">Sign in</button>
+  <button class="registerBtn" mat-raised-button (click)="fireService.register(email, password)">Register</button>
+</div>
+</div>
 
-<button (click)="fireService.sendMessage(sendThisMessage)">send message</button>
 
-<p *ngFor="let n of fireService.messages">
-  {{n | json}}
-</p>
+
+<div *ngIf="fireService.auth.currentUser">
+  <button class="signOut" mat-raised-button (click)="fireService.signOut()">SIGN OUT</button>
+  <h1 class="hello">hello there "{{fireService.auth.currentUser.email}}"</h1>
+
+  <div class="whole">
+  <input class="send" [(ngModel)]="sendThisMessage">
+    <br>
+  <button class="sendBtn" mat-raised-button (click)="sendMessage()">send message</button>
+  </div>
+
+  <mat-card class="content" *ngFor="let n of fireService.messages">
+    <mat-card-content>{{n | json}}</mat-card-content>
+  </mat-card>
+
+</div>
+

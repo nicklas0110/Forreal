@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
+import 'firebase/compat/auth';
 
 import * as config from '../../firebaseconfig.js'
 
@@ -11,21 +12,30 @@ export class FireService {
 
   firebaseApplication;
   firestore: firebase.firestore.Firestore;
+  auth: firebase.auth.Auth;
+
+
   messages: any[] = [];
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
     this.firestore = firebase.firestore();
-    this.getMessages();
+    this.auth = firebase.auth();
+
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        this.getMessages();
+      }
+    })
   }
 
-  sendMessage(sendThisMessage: any) {
+  async sendMessage(sendThisMessage: any) {
     let messageDTO: MessageDTO = {
       messageContent: sendThisMessage,
       timestamp: new Date(),
       user: 'some user'
     }
-    this.firestore
+    await this.firestore
       .collection('myChat')
       .add(messageDTO);
   }
@@ -48,6 +58,18 @@ export class FireService {
           }
         })
       })
+  }
+
+  register(email: string, password: string) {
+    this.auth.createUserWithEmailAndPassword(email, password);
+  }
+
+  signIn(email: string, password: string) {
+    this.auth.signInWithEmailAndPassword(email, password);
+  }
+
+  signOut() {
+    this.auth.signOut();
   }
 
 }
