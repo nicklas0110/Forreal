@@ -1,4 +1,5 @@
 .loginForm{
+  margin-top: 15%;
   justify-content: center;
   align-items: center;
   display: flex;
@@ -7,14 +8,14 @@
 .signInBtn{
   width: 100px;
   height: 40px;
-  margin-top: 20px;
+  margin-top: 15px;
   margin-right: 20px;
   background-color: lightgray;
 }
 .registerBtn{
   width: 100px;
   height: 40px;
-  margin-top: 20px;
+  margin-top: 15px;
   margin-left: 20px;
   background-color: lightgray;
 }
@@ -22,6 +23,7 @@
 .email, .password{
   width: 97%;
   margin-top: 10px;
+  text-align: center;
 }
 
 .loginHeader{
@@ -35,19 +37,24 @@
 .sendInput{
   margin: 0 auto;
   width: 50%;
+  height: 35px;
   font-size: 25px;
-  margin-top: 5px;
+  margin-top: 7px;
   margin-left: 25%;
+  background-color: #505050;
+  color: white;
+  border-radius: 10px;
 }
 
 .sendBtn{
   margin-bottom: 12px;
   margin-left: 5px;
+  background-color: lightgrey;
 }
 
 
 .hello{
-  color: white;
+  color: #ffffff;
   display: flex;
   justify-content: left;
   margin-bottom: 10%;
@@ -55,16 +62,41 @@
   margin-left: 80px;
 }
 
-.content{
+.deleteMessage{
+  height: 30px;
+  width: 30px;
+  border-radius: 100%;
+  position: absolute;
+  right: 0;
+}
+
+.userName\+Time{
+  display: flex;
+  background-color: #4d4d4d;
+  color: white;
+}
+
+.userMessageCard{
+  display: flex;
+  left: 0;
+  background-color: #4d4d4d;
+  color: white;
+}
+
+.userMessageText{
+  width: 95%;
+  word-wrap: break-word;
+}
+
+.contentCard{
   margin-left: 50px;
   margin-right: 50px;
   margin-top: 20px;
-  justify-content: center;
-  align-items: center;
-  display: flex;
+  background-color: #4d4d4d;
+  color: white;
 }
 
-.signOut{
+.logout{
   position: absolute;
   top: 0;
   right: 0;
@@ -80,13 +112,14 @@
   left: 0;
   margin-top: 5px;
   margin-left: 5px;
+  border-radius: 50%;
 }
 
 .bottomBar{
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 45px;
+  height: 55px;
   margin-bottom: 0;
   background-color: #3e3e3e;
 }
@@ -95,8 +128,17 @@
   position: fixed;
   top: 0;
   width: 100%;
-  margin-bottom: 0;
   z-index: 1;
   background-color: #3e3e3e;
   height: 70px;
+}
+
+.everything{
+  height: max-content;
+  background-color: #505050;
+}
+
+.time{
+  color: lightgrey;
+  font-size: smaller;
 }

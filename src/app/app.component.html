@@ -1,36 +1,36 @@
 <div class="loginForm">
-<div *ngIf="fireService.auth.currentUser==null">
-  <h1 class="Loginheader">Login to your account</h1>
-  <input class="email" placeholder="email" [(ngModel)]="email" type="email">
-  <br>
-  <input class="password" placeholder="password"  [(ngModel)]="password" type="password">
-  <br>
-  <button class="signInBtn" mat-raised-button (click)="fireService.signIn(email, password)">Sign in</button>
-  <button class="registerBtn" mat-raised-button (click)="fireService.register(email, password)">Register</button>
+  <div *ngIf="fireService.auth.currentUser==null">
+    <h1 class="Loginheader">Login to your account</h1>
+    <input class="email" placeholder="email" [(ngModel)]="email" type="email">
+    <br>
+    <input class="password" placeholder="password" [(ngModel)]="password" type="password">
+    <br>
+    <button class="signInBtn" mat-raised-button (click)="fireService.signIn(email, password)">Sign in</button>
+    <button class="registerBtn" mat-raised-button (click)="fireService.register(email, password)">Register</button>
+  </div>
 </div>
-</div>
-
 
 
 <div *ngIf="fireService.auth.currentUser">
   <div class="topBar">
-  <img class="Avatar" (click)="fileInput.click()" style="max-height: 60px" [src]="fireService.currentlySignedInUserAvatarURL">
-  <button class="signOut" mat-raised-button (click)="fireService.signOut()">Logout</button>
-  <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file">
-  <h1 class="hello">"{{fireService.auth.currentUser.email}}"</h1>
+    <img class="Avatar" (click)="fileInput.click()" style="max-height: 60px"
+         [src]="fireService.currentlySignedInUserAvatarURL">
+    <button class="logout" mat-raised-button (click)="fireService.signOut()">Logout</button>
+    <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file">
+    <h1 class="hello">"{{fireService.auth.currentUser.email}}"</h1>
   </div>
-
-  <br> <br> <br> <br> <br> <br> <br>
-  <mat-card class="content" *ngFor="let n of fireService.messages">
-    <mat-card-content>{{n.data.messageContent}} <button (click)="deleteMessage(n.id)">X</button></mat-card-content>
-    <mat-card-content>{{n.data.timestamp.toDate()}}</mat-card-content>
-    <mat-card-content>by: {{n.data.user}}</mat-card-content>
+  <br>
+  <mat-card class="contentCard" *ngFor="let n of fireService.messages">
+    <mat-card-content class="userName+Time"><b>{{n.data.user}}</b>&nbsp;-&nbsp;<p
+      class="time">{{n.data.timestamp.toDate()}}</p>
+      <button class="deleteMessage" (click)="deleteMessage(n.id)">X</button>
+    </mat-card-content>
+    <mat-card-content class="userMessageCard"><p class="userMessageText">{{n.data.messageContent}}</p>
+    </mat-card-content>
   </mat-card>
   <br> <br> <br>
   <p class="bottomBar">
     <input class="sendInput" [(ngModel)]="sendThisMessage">
     <button class="sendBtn" mat-raised-button (click)="sendMessage()">Send</button>
   </p>
-
 </div>
-
