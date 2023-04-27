@@ -13,20 +13,24 @@
 
 
 <div *ngIf="fireService.auth.currentUser">
-  <button class="signOut" mat-raised-button (click)="fireService.signOut()">SIGN OUT</button>
-  <h1 class="hello">hello there "{{fireService.auth.currentUser.email}}"</h1>
-
-  <div class="whole">
-  <input class="send" [(ngModel)]="sendThisMessage">
-    <br>
-  <button class="sendBtn" mat-raised-button (click)="sendMessage()">send message</button>
+  <div class="topBar">
+  <img class="Avatar" (click)="fileInput.click()" style="max-height: 60px" [src]="fireService.currentlySignedInUserAvatarURL">
+  <button class="signOut" mat-raised-button (click)="fireService.signOut()">Logout</button>
+  <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file">
+  <h1 class="hello">"{{fireService.auth.currentUser.email}}"</h1>
   </div>
 
+  <br> <br> <br> <br> <br> <br> <br>
   <mat-card class="content" *ngFor="let n of fireService.messages">
     <mat-card-content>{{n.data.messageContent}} <button (click)="deleteMessage(n.id)">X</button></mat-card-content>
     <mat-card-content>{{n.data.timestamp.toDate()}}</mat-card-content>
     <mat-card-content>by: {{n.data.user}}</mat-card-content>
   </mat-card>
+  <br> <br> <br>
+  <p class="bottomBar">
+    <input class="sendInput" [(ngModel)]="sendThisMessage">
+    <button class="sendBtn" mat-raised-button (click)="sendMessage()">Send</button>
+  </p>
 
 </div>
 
