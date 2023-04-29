@@ -24,7 +24,9 @@
          [src]="n.data.avatarURL">
     <mat-card-content class="userName+Time"><b>{{n.data.user}}</b>&nbsp;-&nbsp;<p
       class="time">{{n.data.timestamp.toDate()}}</p>
-      <button class="deleteMessage" (click)="deleteMessage(n.id)">X</button>
+      <button mat-icon-button class="deleteMessage" (click)="deleteMessage(n.id)">
+        <mat-icon>delete_outline</mat-icon>
+      </button>
     </mat-card-content>
     <mat-card-content class="userMessageCard"><p class="userMessageText">{{n.data.messageContent}}</p>
     </mat-card-content>
