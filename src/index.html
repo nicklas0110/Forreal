@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Fbboss</title>
+  <title>ForReal</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -13,4 +13,12 @@
 <body class="mat-typography">
   <app-root></app-root>
 </body>
+<script type="text/javascript">
+  async function toBottom() {
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms)); console. log('1');
+    await sleep(1200);
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  window.onload = toBottom;
+</script>
 </html>

@@ -30,6 +30,7 @@
   justify-content: center;
   display: flex;
   padding-bottom: 2%;
+  color: white;
 }
 
 
@@ -63,37 +64,44 @@
 }
 
 .deleteMessage{
-  height: 30px;
-  width: 30px;
+  height: 25px;
+  width: 25px;
   border-radius: 100%;
   position: absolute;
   right: 0;
+  margin-top: 5px;
+  margin-right: 5px;
 }
 
 .userName\+Time{
   display: flex;
-  background-color: #4d4d4d;
+  background-color: #464646;
   color: white;
+  margin-left: 4em;
+  margin-top: 0.2em;
+  height: 1.5em;
 }
 
 .userMessageCard{
   display: flex;
   left: 0;
-  background-color: #4d4d4d;
+  background-color: #464646;
   color: white;
 }
 
 .userMessageText{
   width: 95%;
   word-wrap: break-word;
+  margin-left: 4em;
 }
 
 .contentCard{
   margin-left: 50px;
   margin-right: 50px;
   margin-top: 20px;
-  background-color: #4d4d4d;
+  background-color: #464646;
   color: white;
+
 }
 
 .logout{
@@ -106,14 +114,31 @@
   height: 4em;
 }
 
-.Avatar {
+.avatar {
   position: absolute;
   top: 0;
   left: 0;
   margin-top: 5px;
   margin-left: 5px;
-  border-radius: 50%;
+  border-radius: 100%;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
 }
+
+.avatarChat {
+  position: absolute;
+  border-radius: 100%;
+  left: 0;
+  margin-left: 5px;
+  margin-top: 5px;
+  max-width: 100%;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+
+}
+
 
 .bottomBar{
   position: fixed;
@@ -141,4 +166,9 @@
 .time{
   color: lightgrey;
   font-size: smaller;
+}
+
+.content{
+  padding-top: 4.5em;
+  padding-bottom: 5em;
 }

@@ -7,7 +7,7 @@ import {FireService} from "./fire.service";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'fbboss';
+  title = 'ForReal';
   sendThisMessage: any;
   email: string = "";
   password: string ="";
@@ -25,4 +25,5 @@ export class AppComponent {
   deleteMessage(id: any){
     this.fireService.deleteMessage(id);
   }
+
 }

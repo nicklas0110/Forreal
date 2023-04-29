@@ -1,6 +1,6 @@
-<div class="loginForm">
+<div class="loginForm" *ngIf="fireService.auth.currentUser==null">
   <div *ngIf="fireService.auth.currentUser==null">
-    <h1 class="Loginheader">Login to your account</h1>
+    <h1 class="loginHeader">Login to your account</h1>
     <input class="email" placeholder="email" [(ngModel)]="email" type="email">
     <br>
     <input class="password" placeholder="password" [(ngModel)]="password" type="password">
@@ -10,17 +10,18 @@
   </div>
 </div>
 
-
-<div *ngIf="fireService.auth.currentUser">
+<div *ngIf="fireService.auth.currentUser" onload="toBottom()">
   <div class="topBar">
-    <img class="Avatar" (click)="fileInput.click()" style="max-height: 60px"
+    <img class="avatar" (click)="fileInput.click()" style="max-height: 60px"
          [src]="fireService.currentlySignedInUserAvatarURL">
     <button class="logout" mat-raised-button (click)="fireService.signOut()">Logout</button>
     <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file">
     <h1 class="hello">"{{fireService.auth.currentUser.email}}"</h1>
   </div>
-  <br>
+  <div class="content">
   <mat-card class="contentCard" *ngFor="let n of fireService.messages">
+    <img class="avatarChat" style="max-height: 50px"
+         [src]="n.data.avatarURL">
     <mat-card-content class="userName+Time"><b>{{n.data.user}}</b>&nbsp;-&nbsp;<p
       class="time">{{n.data.timestamp.toDate()}}</p>
       <button class="deleteMessage" (click)="deleteMessage(n.id)">X</button>
@@ -28,9 +29,11 @@
     <mat-card-content class="userMessageCard"><p class="userMessageText">{{n.data.messageContent}}</p>
     </mat-card-content>
   </mat-card>
-  <br> <br> <br>
-  <p class="bottomBar">
+  </div>
+  <div class="bottomBar">
+  <p>
     <input class="sendInput" [(ngModel)]="sendThisMessage">
     <button class="sendBtn" mat-raised-button (click)="sendMessage()">Send</button>
   </p>
+  </div>
 </div>

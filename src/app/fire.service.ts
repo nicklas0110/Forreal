@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
-import 'firebase/compat/storage'
+import 'firebase/compat/storage';
 
 import * as config from '../../firebaseconfig.js'
 
@@ -17,6 +17,7 @@ export class FireService {
   messages: any[] = [];
   storage: firebase.storage.Storage;
   currentlySignedInUserAvatarURL: string = "https://cdn.discordapp.com/attachments/526767373449953285/1101056394544807976/image.png";
+  messageUserAvatarURL: string = "https://cdn.discordapp.com/attachments/526767373449953285/1101056394544807976/image.png";
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
@@ -29,7 +30,6 @@ export class FireService {
         this.getImageOfSignedInUser();
       }
     })
-
   }
 
   async getImageOfSignedInUser() {
@@ -52,7 +52,8 @@ export class FireService {
     let messageDTO: MessageDTO = {
       messageContent: sendThisMessage,
       timestamp: new Date(),
-      user: this.auth.currentUser?.email + ''
+      user: this.auth.currentUser?.email + '',
+      avatarURL: this.currentlySignedInUserAvatarURL+''
     }
     await this.firestore
       .collection('myChat')
@@ -82,6 +83,7 @@ export class FireService {
           }
           if (change.type == "removed") {
             this.messages = this.messages.filter(m => m.id != change.doc.id);
+
           }
         })
       })
@@ -105,4 +107,5 @@ export interface MessageDTO {
   messageContent: string;
   timestamp: Date;
   user: string;
+  avatarURL: string;
 }
