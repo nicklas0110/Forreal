@@ -14,7 +14,9 @@
   <div class="topBar">
     <img class="avatar" (click)="fileInput.click()" style="max-height: 60px"
          [src]="fireService.currentlySignedInUserAvatarURL">
-    <button class="logout" mat-raised-button (click)="fireService.signOut()">Logout</button>
+    <button mat-icon-button class="logout" (click)="fireService.signOut()">
+      <mat-icon>logout</mat-icon>
+    </button>
     <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file">
     <h1 class="hello">"{{fireService.auth.currentUser.email}}"</h1>
   </div>
@@ -34,8 +36,10 @@
   </div>
   <div class="bottomBar">
   <p>
-    <input class="sendInput" [(ngModel)]="sendThisMessage">
-    <button class="sendBtn" mat-raised-button (click)="sendMessage()">Send</button>
+    <input matInput class="sendInput" [(ngModel)]="sendThisMessage">
+    <button class="sendBtn" mat-icon-button (click)="sendMessage()">
+      <mat-icon>send</mat-icon>
+    </button>
   </p>
   </div>
 </div>

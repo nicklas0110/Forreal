@@ -25,5 +25,6 @@ export class AppComponent {
   deleteMessage(id: any){
     this.fireService.deleteMessage(id);
   }
+  
 
 }

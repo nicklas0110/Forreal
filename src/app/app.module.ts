@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatButton, MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
 
 
 @NgModule({
@@ -19,7 +20,8 @@ import {MatIconModule} from "@angular/material/icon";
     BrowserAnimationsModule,
     MatButtonModule,
     MatCardModule,
-    MatIconModule
+    MatIconModule,
+    MatInputModule
   ],
   providers: [],
   bootstrap: [AppComponent]

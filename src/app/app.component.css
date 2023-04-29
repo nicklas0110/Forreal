@@ -36,11 +36,9 @@
 
 
 .sendInput{
-  margin: 0 auto;
   width: 50%;
-  height: 35px;
-  font-size: 25px;
-  margin-top: 7px;
+  height: 45px;
+  font-size: 35px;
   margin-left: 25%;
   background-color: #505050;
   color: white;
@@ -48,9 +46,9 @@
 }
 
 .sendBtn{
-  margin-bottom: 12px;
+  margin-bottom: 9px;
   margin-left: 5px;
-  background-color: lightgrey;
+  background-color: white;
 }
 
 
@@ -106,10 +104,9 @@
   position: absolute;
   top: 0;
   right: 0;
-  margin-top: 20px;
+  margin-top: 10px;
   margin-right: 10px;
-  font-size: 0.5em;
-  height: 4em;
+  color: white;
 }
 
 .avatar {
@@ -142,7 +139,7 @@
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 55px;
+  height: 65px;
   margin-bottom: 0;
   background-color: #3e3e3e;
 }
