@@ -1,16 +1,14 @@
-import {Injectable} from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 import 'firebase/compat/storage';
-
-import * as config from '../../firebaseconfig.js'
+import * as config from '../../firebaseconfig.js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FireService {
-
   firebaseApplication;
   firestore: firebase.firestore.Firestore;
   auth: firebase.auth.Auth;
@@ -18,6 +16,7 @@ export class FireService {
   storage: firebase.storage.Storage;
   currentlySignedInUserAvatarURL: string = "https://cdn.discordapp.com/attachments/526767373449953285/1101056394544807976/image.png";
   messageUserAvatarURL: string = "https://cdn.discordapp.com/attachments/526767373449953285/1101056394544807976/image.png";
+  messagesUpdate: EventEmitter<void> = new EventEmitter<void>();  // EventEmitter to notify component of updates
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
@@ -29,7 +28,7 @@ export class FireService {
         this.getMessages();
         this.getImageOfSignedInUser();
       }
-    })
+    });
   }
 
   async getImageOfSignedInUser() {
@@ -54,7 +53,7 @@ export class FireService {
       timestamp: new Date(),
       user: this.auth.currentUser?.email + '',
       avatarURL: this.currentlySignedInUserAvatarURL+''
-    }
+    };
     await this.firestore
       .collection('myChat')
       .add(messageDTO);
@@ -71,22 +70,12 @@ export class FireService {
       .collection('myChat')
       .orderBy('timestamp')
       .onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-          if (change.type == "added") {
-            this.messages.push({id: change.doc.id, data: change.doc.data()})
-          }
-          if (change.type == 'modified') {
-            const index: number = this.messages.findIndex(document => document.id != change.doc.id);
-            this.messages[index] =
-              {id: change.doc.id, data: change.doc.data()}
-
-          }
-          if (change.type == "removed") {
-            this.messages = this.messages.filter(m => m.id != change.doc.id);
-
-          }
-        })
-      })
+        this.messages = [];
+        snapshot.docs.forEach(doc => {
+          this.messages.push({id: doc.id, data: doc.data()});
+        });
+        this.messagesUpdate.emit();
+      });
   }
 
   register(email: string, password: string) {

@@ -1,4 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; background-color: #4d4d4d }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body {
+  background-color: #36393f; /* Sets the background color of the entire page to a dark gray */
+  overflow: hidden; /* Prevents scrolling on the webpage */
+  margin: 0; /* Removes the default margin from the html and body */
+  height: 100%; /* Ensures the html and body tags take up the full height of the viewport */
+}
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif; /* Sets the default font to Roboto, with Helvetica Neue and sans-serif as fallbacks */
+}

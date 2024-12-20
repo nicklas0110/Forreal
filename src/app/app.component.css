@@ -1,8 +1,19 @@
-.loginForm{
+.wholeapp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #36393f; /* Discord primary dark background */
+}
+
+.loginForm {
   margin-top: 15%;
   justify-content: center;
   align-items: center;
   display: flex;
+  background-color: #36393f; /* Discord primary dark background */
 }
 
 .signInBtn{
@@ -27,130 +38,193 @@
 }
 
 .loginHeader{
-  justify-content: center;
   display: flex;
+  justify-content: center;
   padding-bottom: 2%;
   color: white;
 }
 
 
-
 .sendInput{
-  width: 50%;
-  height: 45px;
+  display: flex;
+  border: 2px solid #40444B;
+  border-radius: 15px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 50%;
   font-size: 35px;
-  margin-left: 25%;
-  background-color: #505050;
+  background-color: #40444B;
   color: white;
-  border-radius: 10px;
+  margin-left: 12px;
+  margin-right: 12px;
+}
+.sendInputInside{
+  display: flex;
+  border: 2px solid #40444B;
+  border-radius: 15px;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 35px;
 }
 
 .sendBtn{
-  margin-bottom: 9px;
-  margin-left: 5px;
-  background-color: white;
+  display: flex;
+  margin-right: 12px;
+  background-color: #5865F2;
+  color: white;
 }
 
-
-.hello{
+.username{
+  display: flex;
   color: #ffffff;
   display: flex;
   justify-content: left;
-  margin-bottom: 10%;
-  margin-top: 19px;
-  margin-left: 80px;
+  margin-left: 10px;
+  margin-bottom: 0;
+  font-size: 1.8rem;
 }
 
-.deleteMessage{
+.usernametext {
+  display: flex;
+  font-weight: 500;
+  margin-right: 10px;
+}
 
-  position: absolute;
-  right: 0;
+
+.deleteMessage{
+  display: flex;
   background-color: transparent;
   border-radius: 100%;
 }
 
 .userName\+Time{
   display: flex;
-  background-color: #464646;
+  background-color: #2f3136;
   color: white;
-  margin-left: 4em;
   margin-top: 0.2em;
   height: 1.5em;
+  font-size: 1rem;
 }
 
 .userMessageCard{
   display: flex;
   left: 0;
-  background-color: #464646;
+  background-color: #2f3136;;
   color: white;
 }
 
 .userMessageText{
+  display: flex;
   width: 95%;
-  word-wrap: break-word;
-  margin-left: 4em;
+  word-break: break-word;
+  font-size: 1rem;
+  margin: 0;
 }
 
 .contentCard{
-  margin-left: 50px;
-  margin-right: 50px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   margin-top: 20px;
-  background-color: #464646;
+  background-color: #2f3136;
   color: white;
+}
+
+.ccLeft{
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 100px;
+  margin-left: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.ccRight{
+  display: flex;
+  justify-content: right;
+  flex: 0 0 50px;
+}
+
+.ccMiddle{
+  display: flex;
+  flex: 3;
+  flex-direction: column;
+  margin-left: 10px;
 
 }
 
 .logout{
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin-top: 10px;
-  margin-right: 10px;
+  display: flex;
   color: white;
+  margin-right: 20px;
 }
 
 .avatar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin-top: 5px;
-  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 100%;
-  width: 60px;
-  height: 60px;
+  height: 8vh;
+  width: 8vh;
+  object-fit: cover;
+}
+.avatarImg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
+.avatarAndUsername{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-left: 20px;
+}
+
 .avatarChat {
-  position: absolute;
+  display: flex;
   border-radius: 100%;
-  left: 0;
-  margin-left: 5px;
-  margin-top: 5px;
   max-width: 100%;
   width: 50px;
   height: 50px;
   object-fit: cover;
-
 }
 
-
 .bottomBar{
-  position: fixed;
-  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  height: 65px;
+  height: 10vh;
   margin-bottom: 0;
-  background-color: #3e3e3e;
+  background-color: #23272a;
+  flex-direction: row;
 }
 
 .topBar{
-  position: fixed;
-  top: 0;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  width: 100vw;
   z-index: 1;
-  background-color: #3e3e3e;
-  height: 70px;
+  background-color: #23272a;
+  height: 10vh;
 }
 
 .everything{
@@ -159,11 +233,27 @@
 }
 
 .time{
+  display: flex;
   color: lightgrey;
   font-size: smaller;
+  margin: 0;
+}
+.contentwrapper{
+
 }
 
 .content{
-  padding-top: 4.5em;
-  padding-bottom: 5em;
+  display: flex;
+  padding-bottom: 20px;
+  z-index: 1;
+  overflow-y: scroll;
+  flex-direction: column;
+  width: 98%;
+  height: 80vh;
+  margin: 0;
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer 10+ */
+}
+.content::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari, and Opera */
 }
