@@ -1,16 +1,16 @@
-<div class="topBar" *ngIf="fireService.auth.currentUser">
-  <div class="avatarAndUsername">
+<div class="topBar">
+  <div class="avatarAndUsername" *ngIf="fireService.auth.currentUser">
     <div class="avatar" (click)="fileInput.click()">
       <img class="avatarImg" [src]="fireService.currentlySignedInUserAvatarURL">
     </div>
     <h1 class="username">{{fireService.auth.currentUser.email}}</h1>
   </div>
-  <div class="navigationLinks">
+  <div class="navigationLinks" *ngIf="fireService.auth.currentUser">
     <!-- Navigation buttons -->
     <button class="buttonLinks" mat-button routerLink="/messageApp"><mat-icon>message</mat-icon></button>
     <button class="buttonLinks" mat-button routerLink="/pucs"><mat-icon>sentiment_very_satisfied</mat-icon></button>
   </div>
-  <button mat-icon-button class="logout" (click)="fireService.signOut()">
+  <button mat-icon-button class="logout" (click)="fireService.signOut()" *ngIf="fireService.auth.currentUser">
     <mat-icon>logout</mat-icon>
   </button>
   <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file">
