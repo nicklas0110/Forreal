@@ -44,7 +44,7 @@ export class PucsComponent implements OnInit, AfterViewInit {
   private timeLeft: number = 120;
   private feverMode: boolean = false;
   private feverGauge: number = 0;
-  private readonly FEVER_THRESHOLD = 40;
+  private readonly FEVER_THRESHOLD = 500;
   
   private readonly COLORS = [
     '#FF6B6B',  // Hitagi
@@ -89,10 +89,13 @@ export class PucsComponent implements OnInit, AfterViewInit {
   private readonly CENTER_Y_VISUAL_OFFSET = 0; // Adjust this value to move the visual circle down
 
   private centerImage: HTMLImageElement | null = null;
+  private centerFeverImage: HTMLImageElement | null = null;  // Add new image property
 
   private readonly CENTER_IMAGE_SIZE = 70; // Size for the visual image, keeping it a bit larger than hitbox
 
   private lastUpdateTime: number = 0;  // Add this if it's missing
+
+  private readonly MAX_CHAIN_MULTIPLIER = 2.0;  // Maximum chain multiplier
 
   constructor() {
     // Load puc images with correct filenames
@@ -112,9 +115,14 @@ export class PucsComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Load center image
+    // Load regular center image
     this.centerImage = new Image();
     this.centerImage.src = 'assets/pucpuc/koyomi01.png';
+
+    // Load fever center image
+    this.centerFeverImage = new Image();
+    this.centerFeverImage.src = 'assets/pucpuc/koyomiFever.png';
+
     this.lastUpdateTime = Date.now();
   }
 
@@ -280,15 +288,30 @@ export class PucsComponent implements OnInit, AfterViewInit {
     const count = this.selectedPucs.length;
     if (count < 1) return;
     
-    // Calculate combined tier
-    const combinedTier = this.selectedPucs.reduce((sum, puc) => sum + puc.tier, 0);
-    const firstPuc = this.selectedPucs[0];
-    
-    // Add score based on combined tiers and fever mode
-    const basePoints = 10 * Math.pow(2, combinedTier - 1);
-    const pointMultiplier = count === 1 ? this.SINGLE_TAP_POINT_MULTIPLIER : 1;
-    const feverMultiplier = this.feverMode ? 2 : 1;
-    this.score += Math.floor(basePoints * pointMultiplier * feverMultiplier);
+    // Calculate points based on tiers and chain length
+    let totalPoints = 0;
+    for (const puc of this.selectedPucs) {
+      // More gradual scaling with tier
+      const tierMultiplier = 1 + ((puc.tier - 1) * 0.1);  // Each tier adds 10%
+      const basePoints = 10 * tierMultiplier;
+      totalPoints += basePoints;
+    }
+
+    // Apply chain bonus for multiple pucs (0.25 per puc, max 2x)
+    if (count > 1) {
+      const chainMultiplier = Math.min(this.MAX_CHAIN_MULTIPLIER, 1 + ((count - 1) * 0.25));
+      totalPoints *= chainMultiplier;
+    } else {
+      totalPoints *= this.SINGLE_TAP_POINT_MULTIPLIER;  // Single tap bonus
+    }
+
+    // Apply fever multiplier if active
+    if (this.feverMode) {
+      totalPoints *= 2;
+    }
+
+    // Add to score
+    this.score += Math.floor(totalPoints);
     
     // Add to fever gauge (balanced gain)
     if (!this.feverMode) {
@@ -297,7 +320,7 @@ export class PucsComponent implements OnInit, AfterViewInit {
         feverGain = 0.5; // Small gain for single taps
       } else {
         // Bonus for longer chains and higher tiers
-        feverGain = count + Math.floor(combinedTier / 2);
+        feverGain = count + Math.floor(totalPoints / 2);
       }
       
       this.feverGauge = Math.min(this.FEVER_THRESHOLD, this.feverGauge + feverGain);
@@ -318,7 +341,7 @@ export class PucsComponent implements OnInit, AfterViewInit {
       this.spawnQueue = 1;
     } else {
       // Original combining logic for 2+ pucs
-      if (combinedTier >= this.MAX_VISIBLE_TIER) {
+      if (totalPoints >= this.MAX_VISIBLE_TIER) {
         this.spawnQueue = count;
       } else {
         // Create new combined puc
@@ -330,11 +353,11 @@ export class PucsComponent implements OnInit, AfterViewInit {
           y: centerY,
           vx: 0,
           vy: 0,
-          type: firstPuc.type,
-          color: firstPuc.color,
+          type: this.selectedPucs[0].type,
+          color: this.selectedPucs[0].color,
           selected: false,
-          image: firstPuc.image,
-          tier: Math.min(combinedTier, this.MAX_TIER)
+          image: this.selectedPucs[0].image,
+          tier: Math.min(totalPoints, this.MAX_TIER)
         });
         
         this.spawnQueue = count - 1;
@@ -624,13 +647,16 @@ export class PucsComponent implements OnInit, AfterViewInit {
     this.ctx.lineWidth = 5;
     this.ctx.stroke();
 
-    // Draw center image with opacity
-    if (this.centerImage) {
+    // Draw center image with opacity based on fever state
+    if (this.centerImage && this.centerFeverImage) {
       this.ctx.save();
       this.ctx.globalAlpha = 0.5;
       
+      // Choose image based on fever state
+      const currentImage = this.feverMode ? this.centerFeverImage : this.centerImage;
+      
       this.ctx.drawImage(
-        this.centerImage,
+        currentImage,
         this.CANVAS_WIDTH / 2 - this.CENTER_IMAGE_SIZE / 2,
         this.PLAY_AREA_Y + this.CENTER_Y_VISUAL_OFFSET - this.CENTER_IMAGE_SIZE / 2,
         this.CENTER_IMAGE_SIZE,
@@ -762,9 +788,7 @@ export class PucsComponent implements OnInit, AfterViewInit {
       this.ctx.save();
       this.ctx.translate(puc.x, puc.y);
       
-      // Add slight bounce effect
-      const bounceOffset = Math.sin(Date.now() * 0.005 + puc.x * 0.1) * 2;
-      this.ctx.translate(0, bounceOffset);
+      // Removed bounce effect
       
       // Draw selection highlight if selected
       if (puc.selected) {
