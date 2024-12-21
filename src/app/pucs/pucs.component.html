@@ -1,0 +1,56 @@
+<div class="flex flex-col items-center p-4 gap-4">
+  <div class="flex w-96 justify-between items-center">
+    <div class="text-2xl font-bold">Score: {{score}}</div>
+    <div class="text-2xl font-bold text-red-500">{{timeLeft}}s</div>
+  </div>
+
+  <div class="w-96 flex items-center gap-2">
+    <div class="text-lg font-bold">
+      Combo: {{comboMultiplier | number:'1.1-1'}}x
+    </div>
+    <div class="flex-1 h-2 bg-gray-200 rounded">
+      <div
+        class="h-full bg-orange-500 rounded transition-all duration-100"
+        [style.width.%]="(comboTimeLeft / COMBO_TIMEOUT) * 100"
+      ></div>
+    </div>
+  </div>
+
+  <div class="w-96 h-4 bg-gray-200 rounded">
+    <div
+      class="h-full bg-purple-500 rounded transition-all duration-300"
+      [style.width.%]="feverGauge"
+    ></div>
+  </div>
+
+  <div
+    class="relative w-96 h-96 bg-gray-800 rounded-full overflow-hidden"
+    (mouseup)="handlePucRelease()"
+    (mouseleave)="handlePucRelease()"
+    style="width: {{VISIBLE_SIZE}}px; height: {{VISIBLE_SIZE}}px;"
+  >
+    <div
+      *ngFor="let puc of pucs"
+      [class]="'absolute w-12 h-12 ' + puc.color + ' rounded-full flex items-center justify-center text-2xl cursor-pointer select-none transition-transform duration-100 ' +
+        (selectedPucs.includes(puc) ? 'ring-2 ring-white scale-110' : 'hover:scale-105')"
+      [style.transform]="'translate(' + puc.x + 'px, ' + puc.y + 'px)'"
+      (mousedown)="handlePucSelect(puc)"
+      (mouseenter)="handlePucDrag(puc)"
+    >
+      {{puc.type}}
+    </div>
+  </div>
+
+  <div *ngIf="gameOver" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg text-center">
+      <h2 class="text-3xl font-bold mb-4">Game Over!</h2>
+      <p class="text-xl mb-4">Final Score: {{score}}</p>
+      <button
+        (click)="initializeGame()"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
+      >
+        Restart Game
+      </button>
+    </div>
+  </div>
+</div>

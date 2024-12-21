@@ -8,14 +8,18 @@ import {MatButton, MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
-
-
+import {MessageAppComponent} from "./messageApp/messageApp.component";
+import {PucsComponent} from "./pucs/pucs.component";
+import { AppRoutingModule } from './app-routing.module';
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    MessageAppComponent,
+    PucsComponent,
   ],
   imports: [
     BrowserModule,
+    AppRoutingModule,
     FormsModule,
     BrowserAnimationsModule,
     MatButtonModule,

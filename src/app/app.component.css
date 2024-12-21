@@ -1,172 +1,16 @@
-.wholeapp {
+.topBar{
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
-  background-color: #36393f; /* Discord primary dark background */
-}
-
-.loginForm {
-  margin-top: 15%;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  background-color: #36393f; /* Discord primary dark background */
-}
-
-.signInBtn{
-  width: 100px;
-  height: 40px;
-  margin-top: 15px;
-  margin-right: 20px;
-  background-color: lightgray;
-}
-.registerBtn{
-  width: 100px;
-  height: 40px;
-  margin-top: 15px;
-  margin-left: 20px;
-  background-color: lightgray;
-}
-
-.email, .password{
-  width: 97%;
-  margin-top: 10px;
-  text-align: center;
-}
-
-.loginHeader{
-  display: flex;
-  justify-content: center;
-  padding-bottom: 2%;
-  color: white;
-}
-
-
-.sendInput{
-  display: flex;
-  border: 2px solid #40444B;
-  border-radius: 15px;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 50%;
-  font-size: 35px;
-  background-color: #40444B;
-  color: white;
-  margin-left: 12px;
-  margin-right: 12px;
-}
-.sendInputInside{
-  display: flex;
-  border: 2px solid #40444B;
-  border-radius: 15px;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  color: white;
-  border: none;
-  font-size: 35px;
-}
-
-.sendBtn{
-  display: flex;
-  margin-right: 12px;
-  background-color: #5865F2;
-  color: white;
-}
-
-.username{
-  display: flex;
-  color: #ffffff;
-  display: flex;
-  justify-content: left;
-  margin-left: 10px;
-  margin-bottom: 0;
-  font-size: 1.8rem;
-}
-
-.usernametext {
-  display: flex;
-  font-weight: 500;
-  margin-right: 10px;
-}
-
-
-.deleteMessage{
-  display: flex;
-  background-color: transparent;
-  border-radius: 100%;
-}
-
-.userName\+Time{
-  display: flex;
-  background-color: #2f3136;
-  color: white;
-  margin-top: 0.2em;
-  height: 1.5em;
-  font-size: 1rem;
-}
-
-.userMessageCard{
-  display: flex;
-  left: 0;
-  background-color: #2f3136;;
-  color: white;
-}
-
-.userMessageText{
-  display: flex;
-  width: 95%;
-  word-break: break-word;
-  font-size: 1rem;
-  margin: 0;
-}
-
-.contentCard{
-  border-radius: 15px;
-  display: flex;
-  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  margin-top: 20px;
-  background-color: #2f3136;
-  color: white;
+  flex-direction: row;
+  width: 100vw;
+  z-index: 1;
+  background-color: #23272a;
+  height: 10vh;
 }
 
-.ccLeft{
-  display: flex;
-  flex: 1;
-  justify-content: center;
-  align-items: flex-start;
-  min-width: 100px;
-  margin-left: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-.ccRight{
-  display: flex;
-  justify-content: right;
-  flex: 0 0 50px;
-}
-
-.ccMiddle{
-  display: flex;
-  flex: 3;
-  flex-direction: column;
-  margin-left: 10px;
-
-}
-
-.logout{
-  display: flex;
-  color: white;
-  margin-right: 20px;
+.topBar button {
+  color: white; /* This will apply white text color to all buttons in the top bar */
 }
 
 .avatar {
@@ -188,72 +32,47 @@
   object-fit: cover;
 }
 
+.username{
+  display: flex;
+  color: #ffffff;
+  display: flex;
+  justify-content: left;
+  margin-left: 10px;
+  margin-bottom: 0;
+  font-size: 1.8rem;
+}
+
+.logout{
+  display: flex;
+  color: white;
+  margin-right: 20px;
+}
+
 .avatarAndUsername{
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   margin-left: 20px;
+  margin-right: 10px;
 }
 
-.avatarChat {
-  display: flex;
-  border-radius: 100%;
-  max-width: 100%;
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-}
-
-.bottomBar{
+.navigationLinks {
   display: flex;
   align-items: center;
+  margin-right: auto;  /* This pushes logout and profile to the right */
+  color: white;
+}
+
+.buttonLinks {
+  display: flex;
+  margin: 0 10px;  /* Space out buttons */
+  background-color: #5865F2;
   justify-content: center;
-  width: 100%;
-  height: 10vh;
-  margin-bottom: 0;
-  background-color: #23272a;
-  flex-direction: row;
-}
-
-.topBar{
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-direction: row;
-  width: 100vw;
-  z-index: 1;
-  background-color: #23272a;
-  height: 10vh;
 }
 
-.everything{
-  height: max-content;
-  background-color: #505050;
+.buttonLinks mat-icon {
+  margin: 0; /* Remove default margins */
 }
 
-.time{
-  display: flex;
-  color: lightgrey;
-  font-size: smaller;
-  margin: 0;
-}
-.contentwrapper{
-
-}
-
-.content{
-  display: flex;
-  padding-bottom: 20px;
-  z-index: 1;
-  overflow-y: scroll;
-  flex-direction: column;
-  width: 98%;
-  height: 80vh;
-  margin: 0;
-  scrollbar-width: none; /* For Firefox */
-  -ms-overflow-style: none; /* For Internet Explorer 10+ */
-}
-.content::-webkit-scrollbar {
-  display: none; /* For Chrome, Safari, and Opera */
-}

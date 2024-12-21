@@ -1,0 +1,47 @@
+<div class="loginForm" *ngIf="fireService.auth.currentUser==null">
+  <div *ngIf="fireService.auth.currentUser==null">
+    <h1 class="loginHeader">Login to your account</h1>
+    <input class="email" placeholder="email" [(ngModel)]="email" type="email">
+    <br>
+    <input class="password" placeholder="password" [(ngModel)]="password" type="password">
+    <br>
+    <button class="signInBtn" mat-raised-button (click)="fireService.signIn(email, password)">Sign in</button>
+    <button class="registerBtn" mat-raised-button (click)="fireService.register(email, password)">Register</button>
+  </div>
+</div>
+
+<div class="wholeapp" *ngIf="fireService.auth.currentUser">
+  <div class="content" #scrollContainer>
+    <div class="contentCard" *ngFor="let n of fireService.messages">
+      <div class="ccLeft">
+        <div>
+          <img class="avatarChat" style="max-height: 50px" [src]="n.data.avatarURL">
+        </div>
+        <div class="ccMiddle">
+          <div class="userName+Time">
+            <p class="usernametext">{{n.data.user}}</p>
+            <p class="time">{{n.data.timestamp.toDate() | date: 'medium'}}</p>
+          </div>
+          <div class="userMessageCard">
+            <p class="userMessageText">{{n.data.messageContent}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="ccRight">
+        <button *ngIf="n.data.user === fireService.auth.currentUser.email" mat-icon-button class="deleteMessage"
+                (click)="deleteMessage(n.id)">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottomBar">
+    <div class="sendInput">
+      <input matInput class="sendInputInside" [(ngModel)]="sendThisMessage" (keydown.enter)="sendMessage()">
+    </div>
+    <button class="sendBtn" mat-icon-button (click)="sendMessage()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+</div>
