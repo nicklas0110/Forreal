@@ -25,16 +25,20 @@ export class FireService {
   currentlySignedInUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
   messageUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
   messagesUpdate: EventEmitter<void> = new EventEmitter<void>();
+  private messageSubscription: any;
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
     this.firestore = firebase.firestore();
     this.auth = firebase.auth();
     this.storage = firebase.storage();
+    
     this.auth.onAuthStateChanged((user) => {
       if (user) {
-        this.getMessages();
+        this.subscribeToMessages();
         this.getImageOfSignedInUser();
+      } else {
+        this.cleanup();
       }
     });
   }
@@ -84,27 +88,33 @@ export class FireService {
     this.auth.signOut();
   }
 
-  async getMessages() {
-    const snapshot = await this.firestore
+  private subscribeToMessages(): void {
+    this.messageSubscription = this.firestore
       .collection('myChat')
       .orderBy('timestamp', 'asc')
-      .get();
+      .onSnapshot(async (snapshot) => {
+        this.messages = snapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data()
+        }));
 
-    this.messages = snapshot.docs.map(doc => ({
-      id: doc.id,
-      data: doc.data()
-    }));
-    
-    // Update avatar URLs for all messages
-    for (let message of this.messages) {
-      try {
-        message.avatarURL = await this.getAvatarURL(message.data.userId);
-      } catch (error) {
-        message.avatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
-      }
+        // Update avatar URLs for all messages
+        for (let message of this.messages) {
+          try {
+            message.avatarURL = await this.getAvatarURL(message.data.userId);
+          } catch (error) {
+            message.avatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+          }
+        }
+
+        this.messagesUpdate.emit();
+      });
+  }
+
+  cleanup(): void {
+    if (this.messageSubscription) {
+      this.messageSubscription();
     }
-    
-    this.messagesUpdate.emit();
   }
 
   async sendMessage(sendThisMessage: string) {
@@ -118,9 +128,6 @@ export class FireService {
     await this.firestore
       .collection('myChat')
       .add(messageDTO);
-
-    // Refresh messages after sending
-    await this.getMessages();
   }
 
   async deleteMessage(id: string) {
@@ -128,9 +135,6 @@ export class FireService {
       .collection('myChat')
       .doc(id)
       .delete();
-    
-    // Refresh messages after deletion
-    await this.getMessages();
   }
 
   async getImageOfSignedInUser() {
@@ -152,9 +156,6 @@ export class FireService {
       .put(img);
     
     this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
-    
-    // Refresh messages to update avatars
-    await this.getMessages();
   }
 
   async getAvatarURL(userId: string): Promise<string> {
