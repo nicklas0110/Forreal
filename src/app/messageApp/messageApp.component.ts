@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { FireService } from "./fire.service";
+import { FireService } from "../fire.service";
 
 @Component({
   selector: 'messageApp-root',
@@ -10,8 +10,6 @@ import { FireService } from "./fire.service";
 export class MessageAppComponent implements OnInit, OnDestroy {
   title = 'ForReal';
   sendThisMessage: string = "";
-  email: string = "";
-  password: string = "";
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   private subscription!: Subscription;
 

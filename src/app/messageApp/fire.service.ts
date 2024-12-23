@@ -38,13 +38,17 @@ export class FireService {
       .getDownloadURL();
   }
 
-  async updateUserImage($event) {
+  async updateUserImage($event: any) {
     const img = $event.target.files[0];
     const uploadTask = await this.storage
       .ref('avatars')
-      .child(this.auth.currentUser?.uid+"")
+      .child(this.auth.currentUser?.uid + "")
       .put(img);
+    
     this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
+    
+    // Refresh messages to update avatars
+    await this.getMessages();
   }
 
   async sendMessage(sendThisMessage: any) {
@@ -65,29 +69,85 @@ export class FireService {
       .doc(id).delete();
   }
 
-  getMessages() {
-    this.firestore
+  async getMessages() {
+    const snapshot = await this.firestore
       .collection('myChat')
-      .orderBy('timestamp')
-      .onSnapshot(snapshot => {
-        this.messages = [];
-        snapshot.docs.forEach(doc => {
-          this.messages.push({id: doc.id, data: doc.data()});
-        });
-        this.messagesUpdate.emit();
-      });
+      .orderBy('timestamp', 'asc')
+      .get();
+
+    this.messages = snapshot.docs.map(doc => ({
+      id: doc.id,
+      data: doc.data()
+    }));
+    
+    // Update avatar URLs for all messages
+    for (let message of this.messages) {
+      try {
+        message.avatarURL = await this.getAvatarURL(message.data.userId);
+      } catch (error) {
+        message.avatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+      }
+    }
+    
+    this.messagesUpdate.emit();
   }
 
-  register(email: string, password: string) {
-    this.auth.createUserWithEmailAndPassword(email, password);
+  async register(email: string, password: string) {
+    try {
+      // Sign out first to ensure clean state
+      await this.auth.signOut();
+      const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+      if (userCredential.user) {
+        await userCredential.user.sendEmailVerification();
+        // Ensure we sign out after registration
+        await this.auth.signOut();
+      }
+    } catch (error) {
+      await this.auth.signOut(); // Sign out even if there's an error
+      throw error;
+    }
   }
 
-  signIn(email: string, password: string) {
-    this.auth.signInWithEmailAndPassword(email, password);
+  async signIn(email: string, password: string) {
+    const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
+    if (userCredential.user && !userCredential.user.emailVerified) {
+      await this.auth.signOut();
+      throw new Error('Please verify your email before logging in.');
+    }
   }
 
   signOut() {
     this.auth.signOut();
+  }
+
+  async resetPassword(email: string) {
+    await this.auth.sendPasswordResetEmail(email);
+  }
+
+  async resendVerificationEmail() {
+    if (this.auth.currentUser) {
+      await this.auth.currentUser.sendEmailVerification();
+    }
+  }
+
+  async signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      await this.auth.signInWithPopup(provider);
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  async getAvatarURL(userId: string): Promise<string> {
+    try {
+      return await this.storage
+        .ref('avatars')
+        .child(userId)
+        .getDownloadURL();
+    } catch (error) {
+      return "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+    }
   }
 
 }

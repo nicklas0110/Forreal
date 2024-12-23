@@ -3,7 +3,15 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 import 'firebase/compat/storage';
-import * as config from '../../firebaseconfig.js';
+import { config } from './config';
+import { GoogleAuthProvider } from 'firebase/auth';
+
+export interface MessageDTO {
+  messageContent: string;
+  timestamp: Date;
+  user: string;
+  userId: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +24,7 @@ export class FireService {
   storage: firebase.storage.Storage;
   currentlySignedInUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
   messageUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
-  messagesUpdate: EventEmitter<void> = new EventEmitter<void>();  // EventEmitter to notify component of updates
+  messagesUpdate: EventEmitter<void> = new EventEmitter<void>();
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
@@ -31,70 +39,132 @@ export class FireService {
     });
   }
 
-  async getImageOfSignedInUser() {
-    this.currentlySignedInUserAvatarURL = await this.storage
-      .ref('avatars')
-      .child(this.auth.currentUser?.uid+"")
-      .getDownloadURL();
+  async register(email: string, password: string) {
+    try {
+      await this.auth.signOut();
+      const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+      if (userCredential.user) {
+        await userCredential.user.sendEmailVerification();
+        await this.auth.signOut();
+      }
+    } catch (error) {
+      await this.auth.signOut();
+      throw error;
+    }
   }
 
-  async updateUserImage($event) {
-    const img = $event.target.files[0];
-    const uploadTask = await this.storage
-      .ref('avatars')
-      .child(this.auth.currentUser?.uid+"")
-      .put(img);
-    this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
+  async signIn(email: string, password: string) {
+    const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
+    if (userCredential.user && !userCredential.user.emailVerified) {
+      await this.auth.signOut();
+      throw new Error('Please verify your email before logging in.');
+    }
   }
 
-  async sendMessage(sendThisMessage: any) {
-    let messageDTO: MessageDTO = {
-      messageContent: sendThisMessage,
-      timestamp: new Date(),
-      user: this.auth.currentUser?.email + '',
-      avatarURL: this.currentlySignedInUserAvatarURL+''
-    };
-    await this.firestore
-      .collection('myChat')
-      .add(messageDTO);
+  async signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try {
+      await this.auth.signInWithPopup(provider);
+    } catch (error: any) {
+      throw error;
+    }
   }
 
-  deleteMessage(id: any) {
-    this.firestore
-      .collection('myChat')
-      .doc(id).delete();
+  async resetPassword(email: string) {
+    await this.auth.sendPasswordResetEmail(email);
   }
 
-  getMessages() {
-    this.firestore
-      .collection('myChat')
-      .orderBy('timestamp')
-      .onSnapshot(snapshot => {
-        this.messages = [];
-        snapshot.docs.forEach(doc => {
-          this.messages.push({id: doc.id, data: doc.data()});
-        });
-        this.messagesUpdate.emit();
-      });
-  }
-
-  register(email: string, password: string) {
-    this.auth.createUserWithEmailAndPassword(email, password);
-  }
-
-  signIn(email: string, password: string) {
-    this.auth.signInWithEmailAndPassword(email, password);
+  async resendVerificationEmail() {
+    if (this.auth.currentUser) {
+      await this.auth.currentUser.sendEmailVerification();
+    }
   }
 
   signOut() {
     this.auth.signOut();
   }
 
-}
+  async getMessages() {
+    const snapshot = await this.firestore
+      .collection('myChat')
+      .orderBy('timestamp', 'asc')
+      .get();
 
-export interface MessageDTO {
-  messageContent: string;
-  timestamp: Date;
-  user: string;
-  avatarURL: string;
+    this.messages = snapshot.docs.map(doc => ({
+      id: doc.id,
+      data: doc.data()
+    }));
+    
+    // Update avatar URLs for all messages
+    for (let message of this.messages) {
+      try {
+        message.avatarURL = await this.getAvatarURL(message.data.userId);
+      } catch (error) {
+        message.avatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+      }
+    }
+    
+    this.messagesUpdate.emit();
+  }
+
+  async sendMessage(sendThisMessage: string) {
+    let messageDTO: MessageDTO = {
+      messageContent: sendThisMessage,
+      timestamp: new Date(),
+      user: this.auth.currentUser?.email + '',
+      userId: this.auth.currentUser?.uid + ''
+    };
+
+    await this.firestore
+      .collection('myChat')
+      .add(messageDTO);
+
+    // Refresh messages after sending
+    await this.getMessages();
+  }
+
+  async deleteMessage(id: string) {
+    await this.firestore
+      .collection('myChat')
+      .doc(id)
+      .delete();
+    
+    // Refresh messages after deletion
+    await this.getMessages();
+  }
+
+  async getImageOfSignedInUser() {
+    try {
+      this.currentlySignedInUserAvatarURL = await this.storage
+        .ref('avatars')
+        .child(this.auth.currentUser?.uid + "")
+        .getDownloadURL();
+    } catch (error) {
+      this.currentlySignedInUserAvatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+    }
+  }
+
+  async updateUserImage($event: any) {
+    const img = $event.target.files[0];
+    const uploadTask = await this.storage
+      .ref('avatars')
+      .child(this.auth.currentUser?.uid + "")
+      .put(img);
+    
+    this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
+    
+    // Refresh messages to update avatars
+    await this.getMessages();
+  }
+
+  async getAvatarURL(userId: string): Promise<string> {
+    try {
+      return await this.storage
+        .ref('avatars')
+        .child(userId)
+        .getDownloadURL();
+    } catch (error) {
+      return "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+    }
+  }
 }

@@ -1,0 +1,27 @@
+<div class="loginForm">
+  <div class="login-container">
+    <h1 class="loginHeader">Create an account</h1>
+    <p class="login-subheader">Join My website today!</p>
+    
+    <div class="form-group">
+      <label>EMAIL</label>
+      <input class="form-input" [ngClass]="{'input-error': emailError}"
+             placeholder="name@email.com" [(ngModel)]="email" type="email">
+      <span class="input-hint" [ngClass]="{'error-message': emailError}">
+        {{emailError || 'Must contain @ and domain (e.g., .com, .net)'}}
+      </span>
+    </div>
+
+    <div class="form-group">
+      <label>PASSWORD</label>
+      <input class="form-input" [ngClass]="{'input-error': passwordError}"
+             placeholder="••••••••" [(ngModel)]="password" type="password">
+      <span class="input-hint" [ngClass]="{'error-message': passwordError}">
+        {{passwordError || 'Minimum 6 characters'}}
+      </span>
+    </div>
+
+    <button class="signInBtn" mat-raised-button (click)="register()">Register</button>
+    <p class="register-text">Already have an account? <button class="register-link" (click)="goToLogin()">Log In</button></p>
+  </div>
+</div> 
