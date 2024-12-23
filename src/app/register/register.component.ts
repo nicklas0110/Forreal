@@ -10,8 +10,10 @@ import { FireService } from "../fire.service";
 export class RegisterComponent {
   email: string = "";
   password: string = "";
+  username: string = "";
   emailError: string = "";
   passwordError: string = "";
+  usernameError: string = "";
 
   constructor(
     public fireService: FireService,
@@ -22,6 +24,19 @@ export class RegisterComponent {
     let isValid = true;
     this.emailError = "";
     this.passwordError = "";
+    this.usernameError = "";
+
+    // Username validation
+    if (!this.username) {
+      this.usernameError = "Username is required";
+      isValid = false;
+    } else if (this.username.length < 3) {
+      this.usernameError = "Username must be at least 3 characters";
+      isValid = false;
+    } else if (this.username.length > 20) {
+      this.usernameError = "Username must be less than 20 characters";
+      isValid = false;
+    }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!this.email) {
@@ -47,7 +62,7 @@ export class RegisterComponent {
     if (this.validateForm()) {
       try {
         await this.fireService.auth.signOut();
-        await this.fireService.register(this.email, this.password);
+        await this.fireService.register(this.email, this.password, this.username);
         sessionStorage.setItem('registeredEmail', this.email);
         sessionStorage.setItem('tempPassword', this.password);
         this.router.navigate(['/verify-email']);

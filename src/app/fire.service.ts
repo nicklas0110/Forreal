@@ -11,6 +11,12 @@ export interface MessageDTO {
   timestamp: Date;
   user: string;
   userId: string;
+  username: string;
+}
+
+interface UserData {
+  username: string;
+  email: string;
 }
 
 @Injectable({
@@ -43,11 +49,15 @@ export class FireService {
     });
   }
 
-  async register(email: string, password: string) {
+  async register(email: string, password: string, username: string) {
     try {
       await this.auth.signOut();
       const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
       if (userCredential.user) {
+        await this.firestore.collection('users').doc(userCredential.user.uid).set({
+          username: username,
+          email: email
+        });
         await userCredential.user.sendEmailVerification();
         await this.auth.signOut();
       }
@@ -118,11 +128,20 @@ export class FireService {
   }
 
   async sendMessage(sendThisMessage: string) {
+    const userDoc = await this.firestore
+      .collection('users')
+      .doc(this.auth.currentUser?.uid)
+      .get();
+
+    const userData = userDoc.data() as UserData;
+    const username = userData?.username || this.auth.currentUser?.email || 'Anonymous';
+
     let messageDTO: MessageDTO = {
       messageContent: sendThisMessage,
       timestamp: new Date(),
       user: this.auth.currentUser?.email + '',
-      userId: this.auth.currentUser?.uid + ''
+      userId: this.auth.currentUser?.uid + '',
+      username: username
     };
 
     await this.firestore

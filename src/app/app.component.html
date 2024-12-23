@@ -3,7 +3,7 @@
     <div class="avatar" (click)="fileInput.click()">
       <img class="avatarImg" [src]="fireService.currentlySignedInUserAvatarURL">
     </div>
-    <h1 class="username">{{fireService.auth.currentUser.email}}</h1>
+    <h1 class="username">{{username}}</h1>
   </div>
   <div class="navigationLinks" *ngIf="fireService.auth.currentUser">
     <!-- Navigation buttons -->

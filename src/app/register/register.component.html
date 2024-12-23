@@ -4,6 +4,15 @@
     <p class="login-subheader">Join My website today!</p>
     
     <div class="form-group">
+      <label>USERNAME</label>
+      <input class="form-input" [ngClass]="{'input-error': usernameError}"
+             placeholder="Choose a username" [(ngModel)]="username" type="text">
+      <span class="input-hint" [ngClass]="{'error-message': usernameError}">
+        {{usernameError || 'Between 3-20 characters'}}
+      </span>
+    </div>
+
+    <div class="form-group">
       <label>EMAIL</label>
       <input class="form-input" [ngClass]="{'input-error': emailError}"
              placeholder="name@email.com" [(ngModel)]="email" type="email">
