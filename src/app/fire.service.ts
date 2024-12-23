@@ -156,6 +156,14 @@ export class FireService {
       .put(img);
     
     this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
+    
+    // Update all message avatars and emit update
+    for (let message of this.messages) {
+      if (message.data.userId === this.auth.currentUser?.uid) {
+        message.avatarURL = this.currentlySignedInUserAvatarURL;
+      }
+    }
+    this.messagesUpdate.emit();
   }
 
   async getAvatarURL(userId: string): Promise<string> {
