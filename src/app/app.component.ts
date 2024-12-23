@@ -17,6 +17,8 @@ export class AppComponent implements OnInit {
   email: string = "";
   password: string = "";
   username: string = "";
+  isEditingUsername: boolean = false;
+  editUsername: string = "";
 
   constructor(public fireService: FireService) {}
 
@@ -29,7 +31,21 @@ export class AppComponent implements OnInit {
           .get();
         const userData = userDoc.data() as UserData;
         this.username = userData?.username || user.email || '';
+        this.editUsername = this.username;
       }
     });
+  }
+
+  startEditingUsername() {
+    this.isEditingUsername = true;
+    this.editUsername = this.username;
+  }
+
+  async saveUsername() {
+    if (this.editUsername.trim() && this.editUsername !== this.username) {
+      await this.fireService.updateUsername(this.editUsername);
+      this.username = this.editUsername;
+    }
+    this.isEditingUsername = false;
   }
 }

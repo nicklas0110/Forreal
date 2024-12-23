@@ -3,7 +3,20 @@
     <div class="avatar" (click)="fileInput.click()">
       <img class="avatarImg" [src]="fireService.currentlySignedInUserAvatarURL">
     </div>
-    <h1 class="username">{{username}}</h1>
+    <div class="username-container">
+      <div *ngIf="!isEditingUsername" class="username-display">
+        <h1 class="username">{{username}}</h1>
+        <button mat-icon-button class="edit-button" (click)="startEditingUsername()">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+      <div *ngIf="isEditingUsername" class="username-edit">
+        <input class="username-input" [(ngModel)]="editUsername" [value]="username">
+        <button mat-icon-button class="save-button" (click)="saveUsername()">
+          <mat-icon>check</mat-icon>
+        </button>
+      </div>
+    </div>
   </div>
   <div class="navigationLinks" *ngIf="fireService.auth.currentUser">
     <!-- Navigation buttons -->

@@ -6,12 +6,21 @@ import 'firebase/compat/storage';
 import { config } from './config';
 import { GoogleAuthProvider } from 'firebase/auth';
 
-export interface MessageDTO {
+interface MessageDTO {
   messageContent: string;
-  timestamp: Date;
-  user: string;
+  timestamp: firebase.firestore.Timestamp;
   userId: string;
-  username: string;
+}
+
+interface MessageData extends MessageDTO {
+  username?: string;
+  avatarURL?: string;
+}
+
+interface Message {
+  id: string;
+  data: MessageData;
+  avatarURL?: string;
 }
 
 interface UserData {
@@ -26,7 +35,7 @@ export class FireService {
   firebaseApplication;
   firestore: firebase.firestore.Firestore;
   auth: firebase.auth.Auth;
-  messages: any[] = [];
+  messages: Message[] = [];
   storage: firebase.storage.Storage;
   currentlySignedInUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
   messageUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
@@ -78,7 +87,17 @@ export class FireService {
   async signInWithGoogle() {
     const provider = new GoogleAuthProvider();
     try {
-      await this.auth.signInWithPopup(provider);
+      const result = await this.auth.signInWithPopup(provider);
+      if (result.user) {
+        // Check if user document exists, if not create it
+        const userDoc = await this.firestore.collection('users').doc(result.user.uid).get();
+        if (!userDoc.exists) {
+          await this.firestore.collection('users').doc(result.user.uid).set({
+            username: result.user.email,
+            email: result.user.email
+          });
+        }
+      }
     } catch (error: any) {
       throw error;
     }
@@ -103,20 +122,24 @@ export class FireService {
       .collection('myChat')
       .orderBy('timestamp', 'asc')
       .onSnapshot(async (snapshot) => {
-        this.messages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          data: doc.data()
-        }));
-
-        // Update avatar URLs for all messages
-        for (let message of this.messages) {
-          try {
-            message.avatarURL = await this.getAvatarURL(message.data.userId);
-          } catch (error) {
-            message.avatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
-          }
+        const tempMessages: Message[] = [];
+        
+        for (const doc of snapshot.docs) {
+          const messageData = doc.data() as MessageDTO;
+          const username = await this.getUsernameById(messageData.userId);
+          const avatarURL = await this.getAvatarURL(messageData.userId);
+          
+          tempMessages.push({
+            id: doc.id,
+            data: {
+              ...messageData,
+              username: username
+            },
+            avatarURL: avatarURL
+          });
         }
-
+        
+        this.messages = tempMessages;
         this.messagesUpdate.emit();
       });
   }
@@ -128,20 +151,10 @@ export class FireService {
   }
 
   async sendMessage(sendThisMessage: string) {
-    const userDoc = await this.firestore
-      .collection('users')
-      .doc(this.auth.currentUser?.uid)
-      .get();
-
-    const userData = userDoc.data() as UserData;
-    const username = userData?.username || this.auth.currentUser?.email || 'Anonymous';
-
     let messageDTO: MessageDTO = {
       messageContent: sendThisMessage,
-      timestamp: new Date(),
-      user: this.auth.currentUser?.email + '',
-      userId: this.auth.currentUser?.uid + '',
-      username: username
+      timestamp: firebase.firestore.Timestamp.now(),
+      userId: this.auth.currentUser?.uid + ''
     };
 
     await this.firestore
@@ -193,6 +206,43 @@ export class FireService {
         .getDownloadURL();
     } catch (error) {
       return "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+    }
+  }
+
+  async updateUsername(newUsername: string) {
+    if (this.auth.currentUser) {
+      await this.firestore
+        .collection('users')
+        .doc(this.auth.currentUser.uid)
+        .set({ 
+          username: newUsername,
+          email: this.auth.currentUser.email
+        }, { merge: true });
+      
+      // After updating username, refresh messages to show new username
+      const tempMessages = [...this.messages];
+      for (let message of tempMessages) {
+        if (message.data.userId === this.auth.currentUser.uid) {
+          message.data.username = newUsername;
+        }
+      }
+      this.messages = tempMessages;
+      this.messagesUpdate.emit();
+    }
+  }
+
+  async getUsernameById(userId: string): Promise<string> {
+    try {
+      const userDoc = await this.firestore
+        .collection('users')
+        .doc(userId)
+        .get();
+      
+      const userData = userDoc.data() as UserData;
+      return userData?.username || 'Anonymous';
+    } catch (error) {
+      console.error('Error fetching username:', error);
+      return 'Anonymous';
     }
   }
 }

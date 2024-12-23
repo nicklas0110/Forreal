@@ -76,3 +76,52 @@
   margin: 0; /* Remove default margins */
 }
 
+.username-container {
+  display: flex;
+  align-items: center;
+}
+
+.username-display {
+  display: flex;
+  align-items: center;
+}
+
+.username-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.username-input {
+  background-color: #2f3136;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 1.8rem;
+  padding: 4px 8px;
+  width: 200px;
+  height: 36px;
+}
+
+.username-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #5865f2;
+}
+
+.edit-button, .save-button {
+  color: #b9bbbe;
+  margin-left: 8px;
+}
+
+.edit-button:hover {
+  color: #ffffff;
+}
+
+.save-button {
+  color: #43b581;
+}
+
+.save-button:hover {
+  color: #3ca374;
+}
+

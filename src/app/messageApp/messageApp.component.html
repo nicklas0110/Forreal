@@ -16,7 +16,8 @@
         </div>
       </div>
       <div class="ccRight">
-        <button *ngIf="n.data.user === fireService.auth.currentUser.email" mat-icon-button class="deleteMessage"
+        <button *ngIf="n.data.userId === fireService.auth.currentUser.uid" 
+                mat-icon-button class="deleteMessage"
                 (click)="deleteMessage(n.id)">
           <mat-icon>delete_outline</mat-icon>
         </button>
