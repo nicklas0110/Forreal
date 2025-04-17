@@ -16,30 +16,29 @@ import { RegisterComponent } from './register/register.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { EmailVerificationComponent } from './email-verification/email-verification.component';
 import { GoogleAuthProvider } from 'firebase/auth';
+
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RegisterComponent,
     MessageAppComponent,
-    PucsComponent,
     ForgotPasswordComponent,
     EmailVerificationComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
     FormsModule,
     CommonModule,
     BrowserAnimationsModule,
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatInputModule
+    MatInputModule,
+    AppRoutingModule,
+    PucsComponent
   ],
-  providers: [
-    GoogleAuthProvider
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,3 +1,268 @@
 <div class="game-container">
   <canvas #gameCanvas></canvas>
+  <div class="title-screen" *ngIf="!gameStarted">
+    <h1>PUC PUC</h1>
+    <img src="assets/pucpuc/koyomi01.png" alt="Koyomi" class="title-image">
+    <button mat-raised-button 
+            color="primary" 
+            (click)="isLoadoutComplete() ? startGame() : handleStartButtonClick()"
+            [disabled]="!isLoadoutComplete()"
+            [title]="getStartButtonTooltip()">
+      Free Play
+    </button>
+    <button mat-raised-button color="accent" (click)="openMap()">
+      Story Mode
+    </button>
+    <button mat-raised-button color="accent" (click)="openLoadout()">
+      Loadout
+    </button>
+    <button mat-raised-button color="accent" (click)="openLeaderboards()">
+      Leaderboards
+    </button>
+    
+    <div class="selected-loadout">
+      <div class="loadout-item">
+        <h4>Leader:</h4>
+        <div class="selected-character" *ngIf="selectedScreens['Leader Puc']; else notSelectedLeader">
+          <img [src]="'assets/pucpuc/' + getCharacterImageName(selectedScreens['Leader Puc']) + '01.png'" [alt]="selectedScreens['Leader Puc']">
+          <span>{{ getCharacterName(selectedScreens['Leader Puc']) }}</span>
+        </div>
+        <ng-template #notSelectedLeader>
+          <span class="not-selected">Not Selected</span>
+        </ng-template>
+      </div>
+      <div class="loadout-item">
+        <h4>Ability 1:</h4>
+        <div class="selected-character" *ngIf="selectedScreens['Ability 1']; else notSelectedAbility1">
+          <img [src]="'assets/ability/' + selectedScreens['Ability 1'].replace('ability', '') + '.png'" [alt]="selectedScreens['Ability 1']">
+          <span>{{ getCharacterName(selectedScreens['Ability 1']) }}</span>
+        </div>
+        <ng-template #notSelectedAbility1>
+          <span class="not-selected">Not Selected</span>
+        </ng-template>
+      </div>
+      <div class="loadout-item">
+        <h4>Ability 2:</h4>
+        <div class="selected-character" *ngIf="selectedScreens['Ability 2']; else notSelectedAbility2">
+          <img [src]="'assets/ability/' + selectedScreens['Ability 2'].replace('ability', '') + '.png'" [alt]="selectedScreens['Ability 2']">
+          <span>{{ getCharacterName(selectedScreens['Ability 2']) }}</span>
+        </div>
+        <ng-template #notSelectedAbility2>
+          <span class="not-selected">Not Selected</span>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  <div class="loadout-screen" *ngIf="showLoadoutScreen">
+    <h2>Choose Your Loadout</h2>
+    <div class="screen-selection">
+      <div class="screen-option">
+        <h3>Leader Puc</h3>
+        <div class="image-grid">
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Leader Puc'] === 'pucpuc1'" 
+               [class.disabled]="!isAbilityAvailable('pucpuc1', 'Leader Puc')"
+               (click)="isAbilityAvailable('pucpuc1', 'Leader Puc') && selectScreen('Leader Puc', 'pucpuc1')">
+            <img src="assets/pucpuc/hitagi01.png" alt="Hitagi">
+            <div class="ability-info">
+              <span class="ability-name">Hitagi Senjogahara</span>
+              <span class="ability-description">Increase the Size of random PucPucs</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Leader Puc'] === 'pucpuc2'" 
+               [class.disabled]="!isAbilityAvailable('pucpuc2', 'Leader Puc')"
+               (click)="isAbilityAvailable('pucpuc2', 'Leader Puc') && selectScreen('Leader Puc', 'pucpuc2')">
+            <img src="assets/pucpuc/koyomi01.png" alt="Koyomi">
+            <div class="ability-info">
+              <span class="ability-name">Koyomi Araragi</span>
+              <span class="ability-description">Increase the Size of PucPucs around the middle of the screen</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Leader Puc'] === 'pucpuc3'" 
+               [class.disabled]="!isAbilityAvailable('pucpuc3', 'Leader Puc')"
+               (click)="isAbilityAvailable('pucpuc3', 'Leader Puc') && selectScreen('Leader Puc', 'pucpuc3')">
+            <img src="assets/pucpuc/nadeko01.png" alt="Nadeko">
+            <div class="ability-info">
+              <span class="ability-name">Nadeko Sengoku</span>
+              <span class="ability-description">Increase the Size of the smallest PucPucs on the Stage</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Leader Puc'] === 'pucpuc4'" 
+               [class.disabled]="!isAbilityAvailable('pucpuc4', 'Leader Puc')"
+               (click)="isAbilityAvailable('pucpuc4', 'Leader Puc') && selectScreen('Leader Puc', 'pucpuc4')">
+            <img src="assets/pucpuc/shinobu01.png" alt="Shinobu">
+            <div class="ability-info">
+              <span class="ability-name">Shinobu Oshino</span>
+              <span class="ability-description">Increases the Size of PucPucs around the middle of the screen and drops them at the top of the screen where they explode immeditely</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Leader Puc'] === 'pucpuc5'" 
+               [class.disabled]="!isAbilityAvailable('pucpuc5', 'Leader Puc')"
+               (click)="isAbilityAvailable('pucpuc5', 'Leader Puc') && selectScreen('Leader Puc', 'pucpuc5')">
+            <img src="assets/pucpuc/tsubasa01.png" alt="Tsubasa">
+            <div class="ability-info">
+              <span class="ability-name">Tsubasa Hanekawa</span>
+              <span class="ability-description">Target three areas and change the PucPucs of each area into one specfic PucPuc</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-option">
+        <h3>Ability 1</h3>
+        <div class="image-grid">
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 1'] === 'ability1'" 
+               [class.disabled]="!isAbilityAvailable('ability1', 'Ability 1')"
+               (click)="isAbilityAvailable('ability1', 'Ability 1') && selectScreen('Ability 1', 'ability1')">
+            <img src="assets/ability/1.png" alt="Ability 1">
+            <div class="ability-info">
+              <span class="ability-name">Koyomi Dazed</span>
+              <span class="ability-description">Leader PucPuc Size +5</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 1'] === 'ability2'" 
+               [class.disabled]="!isAbilityAvailable('ability2', 'Ability 1')"
+               (click)="isAbilityAvailable('ability2', 'Ability 1') && selectScreen('Ability 1', 'ability2')">
+            <img src="assets/ability/2.png" alt="Ability 2">
+            <div class="ability-info">
+              <span class="ability-name">Hitagi Car ride</span>
+              <span class="ability-description">Refill Stage with PucPucs Size +2 for 7 seconds</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 1'] === 'ability3'" 
+               [class.disabled]="!isAbilityAvailable('ability3', 'Ability 1')"
+               (click)="isAbilityAvailable('ability3', 'Ability 1') && selectScreen('Ability 1', 'ability3')">
+            <img src="assets/ability/3.png" alt="Ability 3">
+            <div class="ability-info">
+              <span class="ability-name">Mayoi Butterfly</span>
+              <span class="ability-description">Increase Skill Gauge(leader puc) by 50%</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 1'] === 'ability4'" 
+               [class.disabled]="!isAbilityAvailable('ability4', 'Ability 1')"
+               (click)="isAbilityAvailable('ability4', 'Ability 1') && selectScreen('Ability 1', 'ability4')">
+            <img src="assets/ability/4.png" alt="Ability 4">
+            <div class="ability-info">
+              <span class="ability-name">Suruga Cooking</span>
+              <span class="ability-description">Increase Linking Range to 1.15</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-option">
+        <h3>Ability 2</h3>
+        <div class="image-grid">
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 2'] === 'ability1'" 
+               [class.disabled]="!isAbilityAvailable('ability1', 'Ability 2')"
+               (click)="isAbilityAvailable('ability1', 'Ability 2') && selectScreen('Ability 2', 'ability1')">
+            <img src="assets/ability/1.png" alt="Ability 1">
+            <div class="ability-info">
+              <span class="ability-name">Koyomi</span>
+              <span class="ability-description">Leader PucPuc Size +5</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 2'] === 'ability2'" 
+               [class.disabled]="!isAbilityAvailable('ability2', 'Ability 2')"
+               (click)="isAbilityAvailable('ability2', 'Ability 2') && selectScreen('Ability 2', 'ability2')">
+            <img src="assets/ability/2.png" alt="Ability 2">
+            <div class="ability-info">
+              <span class="ability-name">Hitagi</span>
+              <span class="ability-description">Refill Stage with PucPucs Size +2 for 7 seconds</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 2'] === 'ability3'" 
+               [class.disabled]="!isAbilityAvailable('ability3', 'Ability 2')"
+               (click)="isAbilityAvailable('ability3', 'Ability 2') && selectScreen('Ability 2', 'ability3')">
+            <img src="assets/ability/3.png" alt="Ability 3">
+            <div class="ability-info">
+              <span class="ability-name">Mayoi</span>
+              <span class="ability-description">Increase Skill Gauge(leader puc) by 50%</span>
+            </div>
+          </div>
+          <div class="image-option" 
+               [class.selected]="selectedScreens['Ability 2'] === 'ability4'" 
+               [class.disabled]="!isAbilityAvailable('ability4', 'Ability 2')"
+               (click)="isAbilityAvailable('ability4', 'Ability 2') && selectScreen('Ability 2', 'ability4')">
+            <img src="assets/ability/4.png" alt="Ability 4">
+            <div class="ability-info">
+              <span class="ability-name">Suruga</span>
+              <span class="ability-description">Increase Linking Range to 1.15</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button mat-raised-button color="primary" (click)="confirmLoadout()">
+      Confirm Loadout
+    </button>
+  </div>
+  <div class="end-screen" *ngIf="showEndScreen">
+    <h2>Game Over!</h2>
+    <div class="end-score-container">
+      <div class="end-score">
+        <h3>Final Score</h3>
+        <p class="score-value">{{ score }}</p>
+      </div>
+      <div class="high-score" *ngIf="isHighScore">
+        <h3>New High Score!</h3>
+        <div class="name-input">
+          <input type="text" placeholder="Enter your name" [(ngModel)]="playerName" maxlength="15">
+          <button (click)="saveHighScore()">Save</button>
+        </div>
+      </div>
+    </div>
+    <div class="end-buttons">
+      <button mat-raised-button color="primary" (click)="restartGame()">
+        Play Again
+      </button>
+      <button mat-raised-button color="accent" (click)="goToMainMenu()">
+        Main Menu
+      </button>
+    </div>
+  </div>
+  <div class="leaderboards-screen" *ngIf="showLeaderboardsScreen">
+    <h2>Leaderboards</h2>
+    <div class="leaderboards-content">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Score</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let score of highScores; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ score.name }}</td>
+            <td>{{ score.score }}</td>
+            <td>{{ score.date }}</td>
+          </tr>
+          <tr *ngIf="highScores.length === 0">
+            <td colspan="4" class="no-scores">No high scores yet!</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button mat-raised-button color="primary" (click)="closeLeaderboards()">
+      Close
+    </button>
+  </div>
+  <div class="map-screen" *ngIf="showMapScreen">
+    <app-pucs-map></app-pucs-map>
+    <button mat-raised-button color="primary" (click)="closeMap()">
+      Back to Menu
+    </button>
+  </div>
 </div>
