@@ -28,6 +28,19 @@ interface UserData {
   email: string;
 }
 
+export interface PucScoreEntry {
+  uid: string;
+  username: string;
+  bestScore: number;
+  date: string;
+}
+
+export interface PucLevelProgress {
+  id: number;
+  stars: number;
+  unlocked: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -229,6 +242,90 @@ export class FireService {
       this.messages = tempMessages;
       this.messagesUpdate.emit();
     }
+  }
+
+  // ----- Puc Puc persistence -------------------------------------------------
+
+  get currentUid(): string | null {
+    return this.auth.currentUser?.uid ?? null;
+  }
+
+  /**
+   * Writes the run's score to pucScores/{uid}, keeping only the player's best.
+   * Runs in a transaction so a lower score can never clobber a higher one.
+   * Returns true when this run became the new personal best.
+   */
+  async savePucScore(score: number): Promise<boolean> {
+    const uid = this.currentUid;
+    if (!uid) return false;
+
+    const username = await this.getUsernameById(uid);
+    const docRef = this.firestore.collection('pucScores').doc(uid);
+
+    return this.firestore.runTransaction(async transaction => {
+      const snapshot = await transaction.get(docRef);
+      const previousBest = (snapshot.data() as PucScoreEntry | undefined)?.bestScore ?? 0;
+
+      if (snapshot.exists && score <= previousBest) {
+        // Keep the best score, but refresh the username in case it changed.
+        transaction.set(docRef, { uid, username }, { merge: true });
+        return false;
+      }
+
+      transaction.set(docRef, {
+        uid,
+        username,
+        bestScore: score,
+        date: new Date().toISOString().split('T')[0],
+        updatedAt: firebase.firestore.Timestamp.now()
+      }, { merge: true });
+      return true;
+    });
+  }
+
+  async getPucLeaderboard(max: number = 10): Promise<PucScoreEntry[]> {
+    const snapshot = await this.firestore
+      .collection('pucScores')
+      .orderBy('bestScore', 'desc')
+      .limit(max)
+      .get();
+
+    return snapshot.docs.map(doc => {
+      const data = doc.data() as Partial<PucScoreEntry>;
+      return {
+        uid: data.uid || doc.id,
+        username: data.username || 'Anonymous',
+        bestScore: data.bestScore || 0,
+        date: data.date || ''
+      };
+    });
+  }
+
+  async getPucPersonalBest(): Promise<number> {
+    const uid = this.currentUid;
+    if (!uid) return 0;
+
+    const doc = await this.firestore.collection('pucScores').doc(uid).get();
+    return (doc.data() as PucScoreEntry | undefined)?.bestScore ?? 0;
+  }
+
+  async savePucStoryProgress(levels: PucLevelProgress[]): Promise<void> {
+    const uid = this.currentUid;
+    if (!uid) return;
+
+    await this.firestore.collection('pucProgress').doc(uid).set({
+      levels,
+      updatedAt: firebase.firestore.Timestamp.now()
+    }, { merge: true });
+  }
+
+  async loadPucStoryProgress(): Promise<PucLevelProgress[] | null> {
+    const uid = this.currentUid;
+    if (!uid) return null;
+
+    const doc = await this.firestore.collection('pucProgress').doc(uid).get();
+    const levels = (doc.data() as { levels?: PucLevelProgress[] } | undefined)?.levels;
+    return levels ?? null;
   }
 
   async getUsernameById(userId: string): Promise<string> {

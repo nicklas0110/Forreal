@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { FireService } from "./fire.service";
 
 interface UserData {
@@ -19,10 +21,19 @@ export class AppComponent implements OnInit {
   username: string = "";
   isEditingUsername: boolean = false;
   editUsername: string = "";
+  // The game takes over the whole viewport, so the top bar is hidden while on /pucs
+  hideChrome: boolean = false;
 
-  constructor(public fireService: FireService) {}
+  constructor(public fireService: FireService, private router: Router) {}
 
   ngOnInit() {
+    this.hideChrome = this.router.url.startsWith('/pucs');
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(event => {
+        this.hideChrome = event.urlAfterRedirects.startsWith('/pucs');
+      });
+
     this.fireService.auth.onAuthStateChanged(async (user) => {
       if (user) {
         const userDoc = await this.fireService.firestore

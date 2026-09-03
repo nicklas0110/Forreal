@@ -1,4 +1,4 @@
-<div class="topBar">
+<div class="topBar" *ngIf="!hideChrome">
   <div class="avatarAndUsername" *ngIf="fireService.auth.currentUser">
     <div class="avatar" (click)="fileInput.click()">
       <img class="avatarImg" [src]="fireService.currentlySignedInUserAvatarURL">

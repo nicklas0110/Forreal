@@ -1,31 +1,41 @@
+// The app top bar is hidden on this route, so the game owns the whole viewport.
 :host {
+  --game-scale: 1;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: calc(100vh - 64px);
-  background-color: #f0f0f0;
-  overflow: hidden;
   position: fixed;
-  top: 64px;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #1b1b1f;
+  overflow: hidden;
 }
 
+// The board is authored against a fixed 600x1050 space and scaled as a whole,
+// so the canvas and every DOM overlay stay in the same coordinate system.
 .game-container {
   position: relative;
   width: 600px;
   height: 1050px;
+  flex: 0 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #FFF5F5;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  
+  transform: scale(var(--game-scale));
+  transform-origin: center center;
+
   canvas {
     display: block;
     border-radius: 8px;
+    touch-action: none;
   }
 }
+
 
 .title-screen {
   position: absolute;
@@ -80,6 +90,26 @@
       cursor: not-allowed;
       opacity: 0.7;
     }
+  }
+
+  .personal-best {
+    margin: 0 0 0.75rem;
+    color: #FFD700;
+    font-size: 1.1rem;
+  }
+
+  // Declared after the generic `button` rule above so it wins on order.
+  button.exit-button {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 200;
+    margin: 0;
+    font-size: 16px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.35);
   }
 
   .selected-loadout {
@@ -301,8 +331,23 @@
     color: #FF6B6B;
   }
 
+  .personal-best {
+    margin: -0.75rem 0 1rem;
+    color: #FFD700;
+    font-weight: bold;
+  }
+
   .leaderboards-content {
     margin-bottom: 1.5rem;
+  }
+
+  .board-status {
+    color: rgba(255, 255, 255, 0.75);
+    font-style: italic;
+
+    &.error {
+      color: #FF9E9E;
+    }
   }
 
   .leaderboard-table {
@@ -332,7 +377,13 @@
     tr:hover {
       background-color: rgba(255, 107, 107, 0.2);
     }
-    
+
+    tr.you {
+      background-color: rgba(255, 215, 0, 0.25);
+      color: #FFD700;
+      font-weight: bold;
+    }
+
     td:first-child {
       font-weight: bold;
     }
@@ -422,39 +473,19 @@
       margin-bottom: 1rem;
     }
     
-    .name-input {
-      display: flex;
-      gap: 0.5rem;
-      
-      input {
-        padding: 0.75rem;
-        border-radius: 4px;
-        border: 2px solid #FF6B6B;
-        background-color: rgba(255, 255, 255, 0.9);
-        font-size: 1rem;
-        flex: 1;
-        
-        &:focus {
-          outline: none;
-          box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.5);
-        }
-      }
-      
-      button {
-        padding: 0.75rem 1.25rem;
-        border-radius: 4px;
-        border: none;
-        background-color: #FF6B6B;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        
-        &:hover {
-          background-color: darken(#FF6B6B, 10%);
-          transform: translateY(-2px);
-        }
-      }
+    .high-score-note {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+
+  .end-stars {
+    margin-top: 1rem;
+
+    h3 {
+      font-size: 1.3rem;
+      color: #FFD700;
+      margin-bottom: 0.25rem;
     }
   }
   

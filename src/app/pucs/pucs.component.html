@@ -1,11 +1,13 @@
 <div class="game-container">
   <canvas #gameCanvas></canvas>
-  <div class="title-screen" *ngIf="!gameStarted">
+  <div class="title-screen" *ngIf="!gameStarted && !showEndScreen">
+    <button class="exit-button" (click)="exitGame()">&larr; Back to chat</button>
     <h1>PUC PUC</h1>
     <img src="assets/pucpuc/koyomi01.png" alt="Koyomi" class="title-image">
-    <button mat-raised-button 
-            color="primary" 
-            (click)="isLoadoutComplete() ? startGame() : handleStartButtonClick()"
+    <p class="personal-best" *ngIf="personalBest > 0">Personal best: {{ personalBest }}</p>
+    <button mat-raised-button
+            color="primary"
+            (click)="isLoadoutComplete() ? startFreePlay() : handleStartButtonClick()"
             [disabled]="!isLoadoutComplete()"
             [title]="getStartButtonTooltip()">
       Free Play
@@ -213,12 +215,13 @@
         <h3>Final Score</h3>
         <p class="score-value">{{ score }}</p>
       </div>
-      <div class="high-score" *ngIf="isHighScore">
-        <h3>New High Score!</h3>
-        <div class="name-input">
-          <input type="text" placeholder="Enter your name" [(ngModel)]="playerName" maxlength="15">
-          <button (click)="saveHighScore()">Save</button>
-        </div>
+      <div class="high-score" *ngIf="isNewPersonalBest">
+        <h3>New Personal Best!</h3>
+        <p class="high-score-note">Saved to your account.</p>
+      </div>
+      <div class="end-stars" *ngIf="isMapMode">
+        <h3>Level Result</h3>
+        <p class="score-value">{{ mapStars }} / 3 &#9733;</p>
       </div>
     </div>
     <div class="end-buttons">
@@ -232,8 +235,12 @@
   </div>
   <div class="leaderboards-screen" *ngIf="showLeaderboardsScreen">
     <h2>Leaderboards</h2>
+    <p class="personal-best" *ngIf="personalBest > 0">Your best: {{ personalBest }}</p>
     <div class="leaderboards-content">
-      <table class="leaderboard-table">
+      <p class="board-status" *ngIf="leaderboardLoading">Loading&hellip;</p>
+      <p class="board-status error" *ngIf="leaderboardError">{{ leaderboardError }}</p>
+
+      <table class="leaderboard-table" *ngIf="!leaderboardLoading && leaderboard.length > 0">
         <thead>
           <tr>
             <th>Rank</th>
@@ -243,14 +250,32 @@
           </tr>
         </thead>
         <tbody>
+          <tr *ngFor="let entry of leaderboard; let i = index" [class.you]="isCurrentUser(entry)">
+            <td>{{ i + 1 }}</td>
+            <td>{{ entry.username }}</td>
+            <td>{{ entry.bestScore }}</td>
+            <td>{{ entry.date }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Offline / signed-out fallback -->
+      <table class="leaderboard-table" *ngIf="!leaderboardLoading && leaderboard.length === 0">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Score</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
           <tr *ngFor="let score of highScores; let i = index">
             <td>{{ i + 1 }}</td>
-            <td>{{ score.name }}</td>
             <td>{{ score.score }}</td>
             <td>{{ score.date }}</td>
           </tr>
           <tr *ngIf="highScores.length === 0">
-            <td colspan="4" class="no-scores">No high scores yet!</td>
+            <td colspan="3" class="no-scores">No high scores yet!</td>
           </tr>
         </tbody>
       </table>
