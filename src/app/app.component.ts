@@ -21,17 +21,21 @@ export class AppComponent implements OnInit {
   username: string = "";
   isEditingUsername: boolean = false;
   editUsername: string = "";
-  // The game takes over the whole viewport, so the top bar is hidden while on /pucs
+  // The game and the chat both provide their own full-viewport chrome, so the
+  // global top bar is hidden on those routes.
+  private readonly CHROMELESS_ROUTES = ['/pucs', '/messageApp'];
+  /** Routes behind AuthGuard — leaving them on sign-out has to be forced. */
+  private readonly GUARDED_ROUTES = ['/pucs', '/messageApp'];
   hideChrome: boolean = false;
 
   constructor(public fireService: FireService, private router: Router) {}
 
   ngOnInit() {
-    this.hideChrome = this.router.url.startsWith('/pucs');
+    this.hideChrome = this.isChromeless(this.router.url);
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(event => {
-        this.hideChrome = event.urlAfterRedirects.startsWith('/pucs');
+        this.hideChrome = this.isChromeless(event.urlAfterRedirects);
       });
 
     this.fireService.auth.onAuthStateChanged(async (user) => {
@@ -43,8 +47,20 @@ export class AppComponent implements OnInit {
         const userData = userDoc.data() as UserData;
         this.username = userData?.username || user.email || '';
         this.editUsername = this.username;
+      } else {
+        this.username = '';
+        this.editUsername = '';
+        // AuthGuard only runs on activation, so signing out while already on a
+        // guarded route would otherwise leave a blank page with no way back.
+        if (this.GUARDED_ROUTES.some(route => this.router.url.startsWith(route))) {
+          this.router.navigate(['/']);
+        }
       }
     });
+  }
+
+  private isChromeless(url: string): boolean {
+    return this.CHROMELESS_ROUTES.some(route => url.startsWith(route));
   }
 
   startEditingUsername() {

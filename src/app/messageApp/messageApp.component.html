@@ -1,36 +1,151 @@
-<div class="wholeapp" *ngIf="fireService.auth.currentUser">
-  <div class="content" #scrollContainer>
-    <div class="contentCard" *ngFor="let n of fireService.messages">
-      <div class="ccLeft">
-        <div>
-          <img class="avatarChat" style="max-height: 50px" [src]="n.avatarURL">
-        </div>
-        <div class="ccMiddle">
-          <div class="userName+Time">
-            <p class="usernametext">{{n.data.username}}</p>
-            <p class="time">{{n.data.timestamp.toDate() | date: 'medium'}}</p>
-          </div>
-          <div class="userMessageCard">
-            <p class="userMessageText">{{n.data.messageContent}}</p>
-          </div>
-        </div>
+<div class="app-shell" *ngIf="fireService.auth.currentUser">
+
+  <!-- Server rail -->
+  <nav class="server-rail">
+    <button class="server-pill active" title="ForReal">FR</button>
+    <div class="rail-divider"></div>
+    <button class="server-pill game" routerLink="/pucs" title="Puc Puc">
+      <mat-icon>sentiment_very_satisfied</mat-icon>
+    </button>
+  </nav>
+
+  <!-- Channel sidebar -->
+  <aside class="channel-sidebar">
+    <header class="server-header">
+      <span>ForReal</span>
+    </header>
+
+    <div class="channel-list">
+      <div class="channel-category">Text Channels</div>
+      <button class="channel active">
+        <span class="hash">#</span>
+        <span class="channel-name">general</span>
+      </button>
+    </div>
+
+    <div class="user-panel">
+      <button class="user-avatar" (click)="fileInput.click()" title="Change avatar">
+        <img [src]="fireService.currentlySignedInUserAvatarURL" alt="Your avatar">
+        <span class="avatar-overlay"><mat-icon>photo_camera</mat-icon></span>
+      </button>
+
+      <div class="user-identity" *ngIf="!isEditingUsername">
+        <span class="user-name" [title]="fireService.currentUsername">
+          {{ fireService.currentUsername || 'Loading…' }}
+        </span>
+        <span class="user-tag">online</span>
       </div>
-      <div class="ccRight">
-        <button *ngIf="n.data.userId === fireService.auth.currentUser.uid" 
-                mat-icon-button class="deleteMessage"
-                (click)="deleteMessage(n.id)">
-          <mat-icon>delete_outline</mat-icon>
+
+      <div class="user-identity editing" *ngIf="isEditingUsername">
+        <input class="username-input"
+               [(ngModel)]="editUsername"
+               (keydown.enter)="saveUsername()"
+               (keydown.escape)="cancelEditingUsername()"
+               maxlength="32"
+               autofocus>
+      </div>
+
+      <div class="user-actions">
+        <button *ngIf="!isEditingUsername" mat-icon-button title="Edit username"
+                (click)="startEditingUsername()">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button *ngIf="isEditingUsername" mat-icon-button class="confirm" title="Save"
+                (click)="saveUsername()">
+          <mat-icon>check</mat-icon>
+        </button>
+        <button mat-icon-button class="danger" title="Log out" (click)="signOut()">
+          <mat-icon>logout</mat-icon>
         </button>
       </div>
     </div>
-  </div>
 
-  <div class="bottomBar">
-    <div class="sendInput">
-      <input matInput class="sendInputInside" [(ngModel)]="sendThisMessage" (keydown.enter)="sendMessage()">
+    <input (change)="fireService.updateUserImage($event)" hidden #fileInput type="file" accept="image/*">
+  </aside>
+
+  <!-- Chat column -->
+  <section class="chat">
+    <header class="channel-header">
+      <span class="hash">#</span>
+      <h1>general</h1>
+      <div class="header-divider"></div>
+      <span class="channel-topic">Say something to everyone.</span>
+    </header>
+
+    <div class="messages" #scrollContainer (scroll)="onScroll()">
+      <div class="channel-intro">
+        <div class="intro-icon">#</div>
+        <h2>Welcome to #general</h2>
+        <p>This is the start of the <strong>#general</strong> channel.</p>
+      </div>
+
+      <div class="empty-state" *ngIf="entries.length === 0">
+        <p>No messages yet — be the first to say hi.</p>
+      </div>
+
+      <ng-container *ngFor="let entry of entries; trackBy: trackByEntry">
+        <div class="day-divider" *ngIf="entry.dayLabel">
+          <span>{{ entry.dayLabel }}</span>
+        </div>
+
+        <div class="message" [class.grouped]="!entry.startsGroup">
+          <div class="message-gutter">
+            <img *ngIf="entry.startsGroup" class="avatar" [src]="entry.avatarURL"
+                 [alt]="entry.username">
+            <span *ngIf="!entry.startsGroup" class="hover-time">
+              {{ formatTime(entry.timestamp) }}
+            </span>
+          </div>
+
+          <div class="message-body">
+            <div class="message-heading" *ngIf="entry.startsGroup">
+              <span class="author" [class.you]="entry.isOwn">{{ entry.username }}</span>
+              <span class="stamp">{{ formatStamp(entry.timestamp) }}</span>
+            </div>
+            <p class="message-text">{{ entry.content }}</p>
+          </div>
+
+          <div class="message-actions" *ngIf="entry.isOwn">
+            <button mat-icon-button class="danger" title="Delete message"
+                    (click)="deleteMessage(entry.id)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+      </ng-container>
     </div>
-    <button class="sendBtn" mat-icon-button (click)="sendMessage()">
-      <mat-icon>send</mat-icon>
+
+    <button class="jump-to-present" *ngIf="showJumpToPresent" (click)="scrollToBottom()">
+      Jump to present
+      <mat-icon>arrow_downward</mat-icon>
     </button>
-  </div>
+
+    <footer class="composer-bar">
+      <div class="composer">
+        <textarea #composer
+                  class="composer-input"
+                  [(ngModel)]="sendThisMessage"
+                  (keydown)="onComposerKeydown($event)"
+                  (input)="autoGrow()"
+                  [maxlength]="MAX_MESSAGE_LENGTH"
+                  placeholder="Message #general"
+                  rows="1"></textarea>
+        <button class="send-button"
+                [disabled]="!sendThisMessage.trim() || sending"
+                (click)="sendMessage()"
+                title="Send">
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+      <div class="composer-footer">
+        <span class="send-error" *ngIf="sendError">{{ sendError }}</span>
+        <span class="hint" *ngIf="!sendError">
+          <strong>Enter</strong> to send · <strong>Shift + Enter</strong> for a new line
+        </span>
+        <span class="counter" *ngIf="sendThisMessage.length > MAX_MESSAGE_LENGTH - 200">
+          {{ MAX_MESSAGE_LENGTH - sendThisMessage.length }}
+        </span>
+      </div>
+    </footer>
+  </section>
 </div>

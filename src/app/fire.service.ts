@@ -6,18 +6,18 @@ import 'firebase/compat/storage';
 import { config } from './config';
 import { GoogleAuthProvider } from 'firebase/auth';
 
-interface MessageDTO {
+export interface MessageDTO {
   messageContent: string;
   timestamp: firebase.firestore.Timestamp;
   userId: string;
 }
 
-interface MessageData extends MessageDTO {
+export interface MessageData extends MessageDTO {
   username?: string;
   avatarURL?: string;
 }
 
-interface Message {
+export interface Message {
   id: string;
   data: MessageData;
   avatarURL?: string;
@@ -50,10 +50,19 @@ export class FireService {
   auth: firebase.auth.Auth;
   messages: Message[] = [];
   storage: firebase.storage.Storage;
-  currentlySignedInUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
-  messageUserAvatarURL: string = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+  static readonly DEFAULT_AVATAR = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+
+  currentlySignedInUserAvatarURL: string = FireService.DEFAULT_AVATAR;
+  messageUserAvatarURL: string = FireService.DEFAULT_AVATAR;
+  currentUsername: string = '';
   messagesUpdate: EventEmitter<void> = new EventEmitter<void>();
   private messageSubscription: any;
+
+  // Profile lookups are cached per uid. Without this, every snapshot refetched
+  // a user doc and a storage download URL for *each* message in the channel —
+  // 2N network calls on every single new message.
+  private usernameCache = new Map<string, string>();
+  private avatarCache = new Map<string, string>();
 
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
@@ -61,10 +70,11 @@ export class FireService {
     this.auth = firebase.auth();
     this.storage = firebase.storage();
     
-    this.auth.onAuthStateChanged((user) => {
+    this.auth.onAuthStateChanged(async (user) => {
       if (user) {
         this.subscribeToMessages();
         this.getImageOfSignedInUser();
+        this.currentUsername = await this.getUsernameById(user.uid);
       } else {
         this.cleanup();
       }
@@ -135,24 +145,28 @@ export class FireService {
       .collection('myChat')
       .orderBy('timestamp', 'asc')
       .onSnapshot(async (snapshot) => {
-        const tempMessages: Message[] = [];
-        
-        for (const doc of snapshot.docs) {
-          const messageData = doc.data() as MessageDTO;
-          const username = await this.getUsernameById(messageData.userId);
-          const avatarURL = await this.getAvatarURL(messageData.userId);
-          
-          tempMessages.push({
-            id: doc.id,
-            data: {
-              ...messageData,
-              username: username
-            },
-            avatarURL: avatarURL
-          });
-        }
-        
-        this.messages = tempMessages;
+        const docs = snapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data() as MessageDTO
+        }));
+
+        // Resolve each distinct author once, in parallel, rather than once per
+        // message in series.
+        const userIds = Array.from(new Set(docs.map(doc => doc.data.userId)));
+        await Promise.all(userIds.map(userId => Promise.all([
+          this.getUsernameById(userId),
+          this.getAvatarURL(userId)
+        ])));
+
+        this.messages = docs.map(doc => ({
+          id: doc.id,
+          data: {
+            ...doc.data,
+            username: this.usernameCache.get(doc.data.userId) || 'Anonymous'
+          },
+          avatarURL: this.avatarCache.get(doc.data.userId) || FireService.DEFAULT_AVATAR
+        }));
+
         this.messagesUpdate.emit();
       });
   }
@@ -160,7 +174,13 @@ export class FireService {
   cleanup(): void {
     if (this.messageSubscription) {
       this.messageSubscription();
+      this.messageSubscription = null;
     }
+    this.messages = [];
+    this.currentUsername = '';
+    this.usernameCache.clear();
+    this.avatarCache.clear();
+    this.currentlySignedInUserAvatarURL = FireService.DEFAULT_AVATAR;
   }
 
   async sendMessage(sendThisMessage: string) {
@@ -189,7 +209,7 @@ export class FireService {
         .child(this.auth.currentUser?.uid + "")
         .getDownloadURL();
     } catch (error) {
-      this.currentlySignedInUserAvatarURL = "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+      this.currentlySignedInUserAvatarURL = FireService.DEFAULT_AVATAR;
     }
   }
 
@@ -201,6 +221,9 @@ export class FireService {
       .put(img);
     
     this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
+    if (this.auth.currentUser) {
+      this.avatarCache.set(this.auth.currentUser.uid, this.currentlySignedInUserAvatarURL);
+    }
     
     // Update all message avatars and emit update
     for (let message of this.messages) {
@@ -212,14 +235,19 @@ export class FireService {
   }
 
   async getAvatarURL(userId: string): Promise<string> {
+    const cached = this.avatarCache.get(userId);
+    if (cached) return cached;
+
+    let url = FireService.DEFAULT_AVATAR;
     try {
-      return await this.storage
-        .ref('avatars')
-        .child(userId)
-        .getDownloadURL();
+      url = await this.storage.ref('avatars').child(userId).getDownloadURL();
     } catch (error) {
-      return "https://i.kym-cdn.com/entries/icons/facebook/000/034/213/cover2.jpg";
+      // No avatar uploaded. The default is cached too, so this miss isn't
+      // retried on every snapshot.
     }
+
+    this.avatarCache.set(userId, url);
+    return url;
   }
 
   async updateUsername(newUsername: string) {
@@ -232,6 +260,9 @@ export class FireService {
           email: this.auth.currentUser.email
         }, { merge: true });
       
+      this.usernameCache.set(this.auth.currentUser.uid, newUsername);
+      this.currentUsername = newUsername;
+
       // After updating username, refresh messages to show new username
       const tempMessages = [...this.messages];
       for (let message of tempMessages) {
@@ -329,17 +360,18 @@ export class FireService {
   }
 
   async getUsernameById(userId: string): Promise<string> {
+    const cached = this.usernameCache.get(userId);
+    if (cached) return cached;
+
+    let username = 'Anonymous';
     try {
-      const userDoc = await this.firestore
-        .collection('users')
-        .doc(userId)
-        .get();
-      
-      const userData = userDoc.data() as UserData;
-      return userData?.username || 'Anonymous';
+      const userDoc = await this.firestore.collection('users').doc(userId).get();
+      username = (userDoc.data() as UserData)?.username || 'Anonymous';
     } catch (error) {
       console.error('Error fetching username:', error);
-      return 'Anonymous';
     }
+
+    this.usernameCache.set(userId, username);
+    return username;
   }
 }
