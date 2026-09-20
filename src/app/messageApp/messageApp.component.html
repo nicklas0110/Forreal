@@ -72,6 +72,14 @@
       <span class="channel-topic">Say something to everyone.</span>
     </header>
 
+    <div class="avatar-banner" *ngIf="fireService.avatarError">
+      <mat-icon>warning</mat-icon>
+      <span>{{ fireService.avatarError }}</span>
+      <button mat-icon-button (click)="fireService.avatarError = ''" title="Dismiss">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
     <div class="messages" #scrollContainer (scroll)="onScroll()">
       <div class="channel-intro">
         <div class="intro-icon">#</div>

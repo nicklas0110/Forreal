@@ -1,35 +1,55 @@
 <div class="loginForm">
   <div class="login-container">
+    <div class="auth-brand">
+      <span class="brand-mark">FR</span>
+      <span>ForReal</span>
+    </div>
+
     <h1 class="loginHeader">Welcome back!</h1>
     <p class="login-subheader">We're so excited to see you again!</p>
-    
+
     <div class="form-group">
-      <label>EMAIL</label>
-      <input class="form-input" [ngClass]="{'input-error': emailError}" 
-             placeholder="name@email.com" [(ngModel)]="email" type="email">
+      <label>Email</label>
+      <input class="form-input" [ngClass]="{'input-error': emailError}"
+             placeholder="name@email.com" [(ngModel)]="email" type="email"
+             autocomplete="email" (keydown.enter)="signIn()">
       <span class="input-hint" [ngClass]="{'error-message': emailError}">
         {{emailError || 'Must contain @ and domain (e.g., .com, .net)'}}
       </span>
     </div>
 
     <div class="form-group">
-      <label>PASSWORD</label>
-      <input class="form-input" [ngClass]="{'input-error': passwordError}"
-             placeholder="••••••••" [(ngModel)]="password" type="password">
+      <label>Password</label>
+      <div class="password-field">
+        <input class="form-input" [ngClass]="{'input-error': passwordError}"
+               placeholder="••••••••" [(ngModel)]="password"
+               [type]="showPassword ? 'text' : 'password'"
+               autocomplete="current-password" (keydown.enter)="signIn()">
+        <button type="button" class="toggle-password" (click)="showPassword = !showPassword"
+                [title]="showPassword ? 'Hide password' : 'Show password'">
+          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
       <span class="input-hint" [ngClass]="{'error-message': passwordError}">
         {{passwordError || 'Minimum 6 characters'}}
       </span>
+      <button class="inline-link" (click)="goToForgotPassword()">Forgot your password?</button>
     </div>
 
-    <button class="signInBtn" mat-raised-button (click)="signIn()">Log In</button>
-    <div class="divider">
-      <span class="divider-text">or</span>
-    </div>
-    <button class="googleBtn" mat-raised-button (click)="signInWithGoogle()">
-      <img src="assets/google-icon.png" alt="Google" class="google-icon">
+    <button class="signInBtn" [disabled]="busy" (click)="signIn()">
+      {{ busy ? 'Logging in…' : 'Log In' }}
+    </button>
+
+    <div class="divider"><span class="divider-text">or</span></div>
+
+    <button class="googleBtn" [disabled]="busy" (click)="signInWithGoogle()">
+      <img src="assets/google-icon.png" alt="" class="google-icon">
       Continue with Google
     </button>
-    <p class="register-text">Need an account? <button class="register-link" (click)="goToRegister()">Register</button></p>
-    <p class="register-text">Forgot your password? <button class="register-link" (click)="goToForgotPassword()">Reset it</button></p>
+
+    <p class="register-text">
+      Need an account?
+      <button class="register-link" (click)="goToRegister()">Register</button>
+    </p>
   </div>
-</div> 
+</div>

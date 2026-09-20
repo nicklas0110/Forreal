@@ -5,7 +5,7 @@ import { FireService } from "../fire.service";
 @Component({
   selector: 'app-email-verification',
   templateUrl: './email-verification.component.html',
-  styleUrls: ['./email-verification.component.css']
+  styleUrls: ['../auth/auth.css']
 })
 export class EmailVerificationComponent implements OnInit {
   email: string = '';

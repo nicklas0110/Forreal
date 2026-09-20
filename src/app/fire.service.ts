@@ -64,6 +64,10 @@ export class FireService {
   private usernameCache = new Map<string, string>();
   private avatarCache = new Map<string, string>();
 
+  /** Last avatar problem, surfaced in the UI so failures aren't silent. */
+  avatarError: string = '';
+  private avatarLoadWarned = false;
+
   constructor() {
     this.firebaseApplication = firebase.initializeApp(config.firebaseConfig);
     this.firestore = firebase.firestore();
@@ -180,6 +184,8 @@ export class FireService {
     this.currentUsername = '';
     this.usernameCache.clear();
     this.avatarCache.clear();
+    this.avatarError = '';
+    this.avatarLoadWarned = false;
     this.currentlySignedInUserAvatarURL = FireService.DEFAULT_AVATAR;
   }
 
@@ -204,50 +210,107 @@ export class FireService {
 
   async getImageOfSignedInUser() {
     try {
-      this.currentlySignedInUserAvatarURL = await this.storage
-        .ref('avatars')
-        .child(this.auth.currentUser?.uid + "")
-        .getDownloadURL();
+      const uid = this.auth.currentUser?.uid;
+      this.currentlySignedInUserAvatarURL = uid
+        ? await this.getAvatarURL(uid)
+        : FireService.DEFAULT_AVATAR;
     } catch (error) {
       this.currentlySignedInUserAvatarURL = FireService.DEFAULT_AVATAR;
     }
   }
 
   async updateUserImage($event: any) {
-    const img = $event.target.files[0];
-    const uploadTask = await this.storage
-      .ref('avatars')
-      .child(this.auth.currentUser?.uid + "")
-      .put(img);
-    
-    this.currentlySignedInUserAvatarURL = await uploadTask.ref.getDownloadURL();
-    if (this.auth.currentUser) {
-      this.avatarCache.set(this.auth.currentUser.uid, this.currentlySignedInUserAvatarURL);
+    const input = $event?.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    // Reset so picking the same file again still fires a change event.
+    if (input) input.value = '';
+
+    this.avatarError = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.avatarError = 'That file is not an image.';
+      return;
     }
-    
-    // Update all message avatars and emit update
-    for (let message of this.messages) {
-      if (message.data.userId === this.auth.currentUser?.uid) {
-        message.avatarURL = this.currentlySignedInUserAvatarURL;
+    if (file.size > 5 * 1024 * 1024) {
+      this.avatarError = 'Image must be smaller than 5 MB.';
+      return;
+    }
+
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) {
+      this.avatarError = 'You are not signed in.';
+      return;
+    }
+
+    try {
+      const uploadTask = await this.storage
+        .ref('avatars')
+        .child(uid)
+        .put(file, { contentType: file.type });
+
+      const url = await uploadTask.ref.getDownloadURL();
+      this.currentlySignedInUserAvatarURL = url;
+      this.avatarCache.set(uid, url);
+      this.avatarLoadWarned = false;
+
+      for (let message of this.messages) {
+        if (message.data.userId === uid) {
+          message.avatarURL = url;
+        }
       }
+      this.messagesUpdate.emit();
+    } catch (error: any) {
+      // Previously this threw into a void promise, so a rules failure looked
+      // identical to "nothing happened".
+      this.avatarError = FireService.describeStorageError(error);
+      console.error('Avatar upload failed [' + (error?.code || 'unknown') + ']:', error);
     }
-    this.messagesUpdate.emit();
+  }
+
+  /** Turns a Firebase Storage error code into something actionable. */
+  static describeStorageError(error: any): string {
+    switch (error?.code) {
+      case 'storage/unauthorized':
+        return 'Denied by Firebase Storage rules. In the Firebase console, allow ' +
+               'authenticated access to avatars/{uid}.';
+      case 'storage/unauthenticated':
+        return 'Your session expired. Sign in again.';
+      case 'storage/object-not-found':
+        return 'No avatar uploaded yet.';
+      case 'storage/quota-exceeded':
+        return 'This Firebase project has exceeded its Storage quota.';
+      case 'storage/retry-limit-exceeded':
+        return 'Upload timed out. Check your connection and try again.';
+      case 'storage/unknown':
+        return 'Storage rejected the request. Usually Storage is not enabled for ' +
+               'the project, or the bucket is missing a CORS rule.';
+      default:
+        return error?.message || 'Could not load or upload the image.';
+    }
   }
 
   async getAvatarURL(userId: string): Promise<string> {
     const cached = this.avatarCache.get(userId);
     if (cached) return cached;
 
-    let url = FireService.DEFAULT_AVATAR;
     try {
-      url = await this.storage.ref('avatars').child(userId).getDownloadURL();
-    } catch (error) {
-      // No avatar uploaded. The default is cached too, so this miss isn't
-      // retried on every snapshot.
+      const url = await this.storage.ref('avatars').child(userId).getDownloadURL();
+      this.avatarCache.set(userId, url);
+      return url;
+    } catch (error: any) {
+      if (error?.code === 'storage/object-not-found') {
+        // This user genuinely has no avatar — cache the fallback so we stop asking.
+        this.avatarCache.set(userId, FireService.DEFAULT_AVATAR);
+      } else if (!this.avatarLoadWarned) {
+        // A rules/config/network failure. Don't cache it (so it recovers on its
+        // own) and report it once instead of silently showing the default.
+        this.avatarLoadWarned = true;
+        this.avatarError = FireService.describeStorageError(error);
+        console.error('Avatar download failed [' + (error?.code || 'unknown') + ']:', error);
+      }
+      return FireService.DEFAULT_AVATAR;
     }
-
-    this.avatarCache.set(userId, url);
-    return url;
   }
 
   async updateUsername(newUsername: string) {

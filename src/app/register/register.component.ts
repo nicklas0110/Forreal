@@ -5,7 +5,7 @@ import { FireService } from "../fire.service";
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  styleUrls: ['../auth/auth.css']
 })
 export class RegisterComponent {
   email: string = "";

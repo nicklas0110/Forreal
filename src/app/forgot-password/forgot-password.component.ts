@@ -5,7 +5,7 @@ import { FireService } from "../fire.service";
 @Component({
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.css']
+  styleUrls: ['../auth/auth.css']
 })
 export class ForgotPasswordComponent {
   email: string = "";

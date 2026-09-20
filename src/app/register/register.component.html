@@ -1,10 +1,15 @@
 <div class="loginForm">
   <div class="login-container">
+    <div class="auth-brand">
+      <span class="brand-mark">FR</span>
+      <span>ForReal</span>
+    </div>
+
     <h1 class="loginHeader">Create an account</h1>
     <p class="login-subheader">Join My website today!</p>
     
     <div class="form-group">
-      <label>USERNAME</label>
+      <label>Username</label>
       <input class="form-input" [ngClass]="{'input-error': usernameError}"
              placeholder="Choose a username" [(ngModel)]="username" type="text">
       <span class="input-hint" [ngClass]="{'error-message': usernameError}">
@@ -13,7 +18,7 @@
     </div>
 
     <div class="form-group">
-      <label>EMAIL</label>
+      <label>Email</label>
       <input class="form-input" [ngClass]="{'input-error': emailError}"
              placeholder="name@email.com" [(ngModel)]="email" type="email">
       <span class="input-hint" [ngClass]="{'error-message': emailError}">
@@ -22,7 +27,7 @@
     </div>
 
     <div class="form-group">
-      <label>PASSWORD</label>
+      <label>Password</label>
       <input class="form-input" [ngClass]="{'input-error': passwordError}"
              placeholder="••••••••" [(ngModel)]="password" type="password">
       <span class="input-hint" [ngClass]="{'error-message': passwordError}">

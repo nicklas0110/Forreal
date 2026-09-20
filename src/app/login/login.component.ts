@@ -5,13 +5,16 @@ import { FireService } from "../fire.service";
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['../auth/auth.css']
 })
 export class LoginComponent implements OnInit {
   email: string = "";
   password: string = "";
   emailError: string = "";
   passwordError: string = "";
+  showPassword: boolean = false;
+  /** Blocks double submits and drives the button's pending label. */
+  busy: boolean = false;
 
   constructor(
     public fireService: FireService,
@@ -60,27 +63,42 @@ export class LoginComponent implements OnInit {
   }
 
   async signIn() {
-    if (this.validateForm()) {
-      try {
-        await this.fireService.signIn(this.email, this.password);
-      } catch (error: any) {
-        if (error.code === 'auth/user-not-found') {
-          this.emailError = "User not found";
-        } else if (error.code === 'auth/wrong-password') {
-          this.passwordError = "Incorrect password";
-        } else {
-          this.emailError = error.message;
-        }
+    if (this.busy || !this.validateForm()) return;
+
+    this.busy = true;
+    try {
+      await this.fireService.signIn(this.email, this.password);
+    } catch (error: any) {
+      // Newer Firebase collapses both cases into invalid-credential.
+      if (error.code === 'auth/user-not-found') {
+        this.emailError = "User not found";
+      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        this.passwordError = "Incorrect email or password";
+      } else if (error.code === 'auth/too-many-requests') {
+        this.emailError = "Too many attempts. Try again later.";
+      } else {
+        this.emailError = error.message;
       }
+    } finally {
+      this.busy = false;
     }
   }
 
   async signInWithGoogle() {
+    if (this.busy) return;
+
+    this.busy = true;
+    this.emailError = "";
+    this.passwordError = "";
     try {
       await this.fireService.signInWithGoogle();
       this.router.navigate(['/messageApp']);
     } catch (error: any) {
-      this.emailError = error.message;
+      if (error.code !== 'auth/popup-closed-by-user') {
+        this.emailError = error.message;
+      }
+    } finally {
+      this.busy = false;
     }
   }
 
